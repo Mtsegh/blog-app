@@ -1,0 +1,277 @@
+import { sendEmailsToSubscribers } from "../emails/emailHandler.js";
+import { Blog } from "../models/blogModel.js";
+import slugify from "slugify";
+import uploadToCloudinary from "../utils/cloudinary.uploader.js";
+import proccessBlogHtml, { handleBase64OrLink } from "../utils/handleHtml.js";
+import getExcerpt from "../utils/createExcerpt.js";
+import User from "../models/userModel.js";
+
+
+export const getAllBlogs = async (req, res) => {
+    try {
+        // Fetch all blogs sorted by createdAt descending
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = parseInt(req.query.skip) || 0;
+        const blogs = await Blog.find({ published: true })
+            .sort({ publishedAt: -1 })
+            .select("-htmlContent -tags -blogpics")
+            .skip(skip)
+            .limit(limit);
+        
+        if (!blogs) res.status(404).json({ message: "No written stories yet. Check later" });
+
+
+        res.status(200).json({ count: blogs.length, skip, limit, blogs, });
+    } catch (error) {
+        console.log("Error in getAllBlogs controller: ", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const getBlog = async (req, res) => {
+    try {
+        const { slug } = req.params;
+
+        const blog = await Blog.findOne({ slug });
+
+        if (!blog) res.status(404).json({ message: "Blog not found" });
+
+        res.status(200).json(blog);
+    } catch (error) {
+        console.log("Error in getBlog controller: ", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const getBlogs = async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = parseInt(req.query.skip) || 0;
+
+        const { author, category, drafts } = req.query;
+        const filter = { published: true };
+
+        if (author) filter.authorId = author;
+        if (category) filter.category = category.toLowerCase();
+        if (drafts && req.user) {
+            filter.published = false;
+            filter.authorId = req.user._id;
+        };
+
+        if (!author && !category) {
+            return res.status(400).json({ message: "Invalid request" });
+        }
+
+        const blogs = await Blog.find(filter)
+            .sort({ createdAt: -1 })
+            .select("-htmlContent -tags -blogPics")
+            .skip(skip)
+            .limit(limit);
+
+        if (blogs.length === 0) {
+            return res.status(404).json({ message: "No blogs found" });
+        }
+
+        res.status(200).json({ count: blogs.length, skip, limit, blogs });
+    } catch (error) {
+        console.error("Error in getBlogs controller:", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+
+export const createBlog = async (req, res) => {
+    try {
+        const { title, htmlContent, coverImage, tags, category } = req.body;
+        if (!title || !htmlContent || !coverImage || !tags || !category) return res.status(400).json({ message: "Invalid Blog. Make sure Blog is complete befor submiting" });
+
+        const authorId = req.user._id;
+        const author = req.user.fullname;
+
+        let slug = slugify(title, { lower: true, strict: true });
+        let existing = await Blog.findOne({ slug });
+        let counter = 1;
+
+    // Append number if slug already exists
+        while (existing) {
+            slug = `${slugify(title, { lower: true, strict: true })}-${counter}`;
+            existing = await Blog.findOne({ slug });
+            counter++;
+        }
+
+        const proccessedHTML = await proccessBlogHtml(htmlContent);
+        const excerpt = getExcerpt(proccessedHTML);
+
+        const savedCoverImg = await uploadToCloudinary([coverImage]);
+        if (savedCoverImg.error) return res.status(500).json({ message: savedCoverImg.error });
+
+        const newBlog = new Blog({
+            authorId,
+            author,
+            title,
+            slug,
+            htmlContent: proccessedHTML,
+            excerpt,
+            coverImage: savedCoverImg[0],
+            tags,
+            category,
+        })
+
+        if (newBlog) {
+            await newBlog.save()
+            res.status(201).json(newBlog);
+        } else {
+            res.status(400).json({ message: "invalid blog data" })
+        }
+    } catch (error) {
+        console.log("Error in createBlog controller: ", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const editBlog = async (req, res) => {
+    try {
+        const { title, slug, htmlContent, coverImage, tags, category } = req.body;
+        if (!title || !slug || !htmlContent || !coverImage || !tags || !category) return res.status(400).json({ message: "Invalid Blog. Make sure Blog is complete before submiting" });
+
+        const proccessedHTML = await proccessBlogHtml(htmlContent);
+        const excerpt = getExcerpt(proccessedHTML);
+
+        const coverImageLink = await handleBase64OrLink(coverImage);
+
+        const newBlog = await Blog.findOneAndUpdate({
+                slug
+            },            
+            {
+                title,
+                slug,
+                htmlContent: proccessedHTML,
+                excerpt,
+                coverImage: coverImageLink,
+                category,
+                tags,
+            },
+            {
+                new: true
+            }
+        )
+
+        if (newBlog) {
+            res.status(201).json(newBlog);
+        } else {
+            res.status(400).json({ message: "invalid blog data" })
+        }
+    } catch (error) {
+        console.log("Error in editBlog controller: ", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const publish = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const authorId = req.user._id; // assuming logged-in user
+
+    const blog = await Blog.findOneAndUpdate({ slug, authorId }, { published: true }, { new: true });
+    
+    if (!blog) {
+        return res.status(404).json({ message: "Blog not found" });
+    }
+    // Find subscribers (both author and category)
+    // const [authorSubs, categorySubs] = await Promise.all([
+    //     Subscription.find({ subscribeType: "User", subscribeTo: blog.authorId }).select("email -_id"),
+    //     Subscription.find({ subscribeType: "Category", subscribeTo: blog.category }).select("email -_id"),
+    // ]);
+
+    // Combine and remove duplicates
+    // const allEmails = [...new Set([...authorSubs.map(s => s.email), ...categorySubs.map(s => s.email)])];
+
+    // if (allEmails.length > 0) {
+    //     await sendEmailsToSubscribers(allEmails, blog.excerpt);
+    // }
+
+    res.status(200).json({ message: "Blog published and notifications sent", blog });
+  } catch (err) {
+        console.error("Error publishing blog:", err.message);
+        res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const deleteBlog = async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const authorId = req.user._id; // assuming logged-in user
+
+    const blog = await Blog.findOneAndDelete({ authorId, slug });
+
+    if (!blog) {
+        return res.status(404).json({ message: "Blog not found" });
+    }
+
+    res.status(200).json({ message: "Blog deleted successfully" });
+  } catch (err) {
+        console.error("Error deleting blog:", err.message);
+        res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const searchBlogs = async (req, res) => {
+    try {
+        const { q, sortBy = "createdAt" } = req.query;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = parseInt(req.query.skip) || 0;
+
+        if (!q || q.trim() === "") {
+            return res.status(400).json({ message: "Search query (q) is required" });
+        }
+
+        const searchRegex = new RegExp(q, "i"); // case-insensitive regex
+
+        // Step 1 — find authors that match the query (for name-based search)
+        const matchingAuthors = await User.find(
+            { fullname: searchRegex },
+            { _id: 1 }
+        );
+
+        const authorIds = matchingAuthors.map((a) => a._id);
+
+        // Step 2 — search blogs by multiple fields
+        const filter = {
+            published: true,
+            $or: [
+                { title: searchRegex },
+                { tags: { $in: [searchRegex] } },
+                { category: searchRegex },
+                { coverImage: searchRegex },
+                { authorId: { $in: authorIds } }, // match author names
+            ],
+        };
+
+        const validSorts = ["createdAt", "views", "likes"];
+        const sortField = validSorts.includes(sortBy) ? sortBy : "createdAt";
+
+        const blogs = await Blog.find(filter)
+            .populate("authorId", "name") // get author name
+            .sort({ [sortField]: -1 })
+            .select("-htmlContent -tags -blogpics")
+            .skip(skip)
+            .limit(limit);
+
+        if (blogs.length === 0) {
+            return res.status(404).json({ message: "No matching blogs found" });
+        }
+
+        res.status(200).json({
+            count: blogs.length,
+            skip,
+            limit,
+            query: q,
+            sortBy: sortField,
+            blogs,
+        });
+    } catch (error) {
+        console.error("Error in searchBlogs controller:", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+

@@ -1,0 +1,43 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+.ql-toolbar {
+    position: sticky;
+    top: 65px;
+    z-index: 40;
+    background: white;
+    border-radius: 8px 8px 0px 0px;
+}
+
+.story-nav {
+    color: rgb(97, 97, 97);
+}
+
+.story-nav:hover {
+    cursor: pointer;
+    color: rgb(58, 58, 58);
+}
+
+.ql-container {
+    border-radius: 0px 0px 8px 8px;
+}
+
+.blog-view a {
+    color: blue;
+    font-weight: 600;
+    text-decoration: underline;
+}
+  
+.blog-view  pre {
+    background-color: black;
+    padding: 10px 20px;
+    border-radius: 10px;
+    color: whitesmoke;
+}
+
+h1 {
+    font-size: xx-large;
+}
+h2 {
+    font-size: x-large;
+}
