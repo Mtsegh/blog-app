@@ -4,6 +4,7 @@ const userSchema = mongoose.Schema({
     fullname: {
         type: String,
         required: true,
+        maxlength: [40, "Bio cannot exceed 40 characters"]
     },
     email: {
         type: String,
@@ -14,13 +15,21 @@ const userSchema = mongoose.Schema({
         type: String,
         required: true,
     },
+    bio: {
+        type: String,
+        maxlength: [400, "Bio cannot exceed 150 characters"]
+    },
     username: {
         type: String,
         required: true,
         unique: [true, "Username is taken"]
     },
     subscribers: [String],
-    profilePic: {
+    profileImage: {
+        type: String,
+        default: ""
+    },
+    coverImage: {
         type: String,
         default: ""
     },

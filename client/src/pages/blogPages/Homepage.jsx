@@ -19,13 +19,15 @@ export default function Homepage() {
   }   
 
   return (
-    <div className="flex flex-1 size-full top-20 p-4 ">
+    <div className="flex flex-1 size-full top-20 p-4 bg-amber-50">
       <div className='flex m-3'>
-        {blogs.map((blog) => (
-            <Link key={blog._id} to={`/blog/${blog.slug}`}>
-            <BlogPreview blog={blog} />
-          </Link>
-        ))}
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xxl:grid-cols-4 gap-8 max-w-7xl mx-auto  p-5'>
+          {blogs.map((blog) => (
+              <Link key={blog._id} to={`/blog/${blog.slug}`}>
+              <BlogPreview blog={blog} />
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

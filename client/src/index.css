@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+body {
+  font-family: 'Open Sans', sans-serif;
+}
+
+
 .ql-toolbar {
     position: sticky;
     top: 65px;
@@ -41,3 +46,13 @@ h1 {
 h2 {
     font-size: x-large;
 }
+
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(-4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn .18s ease-out;
+}
+

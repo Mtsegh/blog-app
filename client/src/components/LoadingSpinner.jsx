@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 const LoadingSpinner = () => {
 	return (
-		<div className='min-h-screen bg-gradient-to-br from-blue-200 via-gray-400 to-gray-200 flex items-center justify-center relative overflow-hidden'>
+		<div className='h-dvh bg-gradient-to-br from-blue-200 via-gray-400 to-gray-200 flex items-center justify-center relative overflow-hidden'>
 			{/* Simple Loading Spinner */}
 			<motion.div
 				className='w-16 h-16 border-4 border-t-4 border-t-green-500 border-green-200 rounded-full'
@@ -14,3 +14,4 @@ const LoadingSpinner = () => {
 };
 
 export default LoadingSpinner;
+

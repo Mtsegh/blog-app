@@ -18,7 +18,7 @@ export const getAllBlogs = async (req, res) => {
             .skip(skip)
             .limit(limit);
         
-        if (!blogs) res.status(404).json({ message: "No written stories yet. Check later" });
+        if (!blogs) return res.status(404).json({ message: "No written stories yet. Check later" });
 
 
         res.status(200).json({ count: blogs.length, skip, limit, blogs, });
@@ -34,7 +34,7 @@ export const getBlog = async (req, res) => {
 
         const blog = await Blog.findOne({ slug });
 
-        if (!blog) res.status(404).json({ message: "Blog not found" });
+        if (!blog) return res.status(404).json({ message: "Blog not found" });
 
         res.status(200).json(blog);
     } catch (error) {
@@ -47,17 +47,19 @@ export const getBlogs = async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 10;
         const skip = parseInt(req.query.skip) || 0;
-
+        
         const { author, category, drafts } = req.query;
-        const filter = { published: true };
+        const filter = { };
 
         if (author) filter.authorId = author;
         if (category) filter.category = category.toLowerCase();
-        if (drafts && req.user) {
-            filter.published = false;
-            filter.authorId = req.user._id;
-        };
-
+        
+        if (drafts === "true") {
+            filter.published = false;  
+        } else {
+            filter.published = true;
+        }
+        
         if (!author && !category) {
             return res.status(400).json({ message: "Invalid request" });
         }
@@ -73,6 +75,8 @@ export const getBlogs = async (req, res) => {
         }
 
         res.status(200).json({ count: blogs.length, skip, limit, blogs });
+        console.log("count: ", blogs.length, skip, limit, filter);
+        
     } catch (error) {
         console.error("Error in getBlogs controller:", error.message);
         res.status(500).json({ message: "Internal Server Error" });
@@ -197,6 +201,25 @@ export const publish = async (req, res) => {
   }
 };
 
+export const likeBlog = async (req, res) => {
+    try {
+        const { slug } = req.params;
+
+        const blog = await Blog.findOne({ slug });
+        if (!blog) return res.status(404).json({ message: "Blog not found" });
+
+        // Increment likes count
+        blog.likes = (blog.likes || 0) + 1;
+        await blog.save();
+        console.log("Blog liked:", blog.slug, "Total Likes:", blog.likes);
+        res.status(200).json({ likesCount: blog.likes });
+    } catch (error) {
+        console.error("Error in visitor like:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+
 export const deleteBlog = async (req, res) => {
   try {
     const { slug } = req.params;
@@ -222,7 +245,7 @@ export const searchBlogs = async (req, res) => {
         const skip = parseInt(req.query.skip) || 0;
 
         if (!q || q.trim() === "") {
-            return res.status(400).json({ message: "Search query (q) is required" });
+            return res.status(400).json({ message: "Search can not be empty" });
         }
 
         const searchRegex = new RegExp(q, "i"); // case-insensitive regex
@@ -251,17 +274,15 @@ export const searchBlogs = async (req, res) => {
         const sortField = validSorts.includes(sortBy) ? sortBy : "createdAt";
 
         const blogs = await Blog.find(filter)
-            .populate("authorId", "name") // get author name
+            .populate("authorId", "fullname") // get author name
             .sort({ [sortField]: -1 })
             .select("-htmlContent -tags -blogpics")
             .skip(skip)
             .limit(limit);
 
-        if (blogs.length === 0) {
-            return res.status(404).json({ message: "No matching blogs found" });
-        }
 
         res.status(200).json({
+            success: true,
             count: blogs.length,
             skip,
             limit,

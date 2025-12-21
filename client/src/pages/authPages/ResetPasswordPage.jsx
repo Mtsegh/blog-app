@@ -1,39 +1,55 @@
 import { useState } from 'react'
 import { AuthImagePattern, InputField } from '../../components'
-import { Loader2, Lock, Mail, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Loader2, Lock } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import pen from "../../assets/pen.svg"
 import useAuthStore from '../../store/useAuthStore';
 import toast from "react-hot-toast";
 
 export default function ResetPasswordPage() {
 
+    const { token } = useParams();
+    const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
-        fullName: "",
-        username: "",
-        email: "",
         password: "",
-        comfirmPassword: "",
+        confirmPassword: "",
     });
 
-    const { signup, isSigningUp } = useAuthStore();
+    const { resetPassword, isLoading } = useAuthStore();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
 
-        const success = validateForm();
-
-        if (success === true) signup(formData);
+        if (!validateForm()) return;
+        
+        const res = await resetPassword(token, formData);
+        if (res) {
+            navigate("/login");
+        } else {
+            navigate("/forgot-password");
+        }
     };
 
     const validateForm = () => {
-        if (!formData.password) return toast.error("Password is required");
-        if (formData.password.length < 6) return toast.error("Password must be at least 6 characters");
-        if (formData.password !== formData.comfirmPassword) return toast.error("Comfirm Password must match Password");
+        if (!formData.password) {
+            toast.error("Password is required");
+            return false;
+        }
+
+        if (formData.password.length < 6) {
+            toast.error("Password must be at least 6 characters");
+            return false;
+        }
+
+        if (formData.password !== formData.confirmPassword) {
+            toast.error("Confirm Password must match Password");
+            return false;
+        }
 
         return true;
     };
+
 
     return (
         <div className="grid lg:grid-cols-2">
@@ -70,13 +86,13 @@ export default function ResetPasswordPage() {
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
                 <InputField
-                    label={"Comfirm Password"}
+                    label={"confirm Password"}
                     Icon={Lock}
                     type={showPassword ? "text" : "password"}
                     style={"mb-1"}
                     placeholder={"********"}
-                    value={formData.comfirmPassword}
-                    onChange={(e) => setFormData({ ...formData, comfirmPassword: e.target.value })}
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 />
                 <label className='flex items-center space-x-2 cursor-pointer top-0 pt-0 mt-0'>
                     <input
@@ -88,14 +104,14 @@ export default function ResetPasswordPage() {
                     <span className='select-none'>Show Password</span>
                 </label>
 
-                <button type="submit" className="btn btn-primary w-full" disabled={isSigningUp}>
-                {isSigningUp ? (
+                <button type="submit" className="btn btn-primary w-full" disabled={isLoading}>
+                {isLoading ? (
                     <>
                     <Loader2 className="size-5 animate-spin" />
                     Loading...
                     </>
                 ) : (
-                    "Save Password"
+                    "Reset Password"
                 )}
                 </button>
             </form>

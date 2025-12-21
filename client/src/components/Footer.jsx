@@ -1,4 +1,6 @@
-
+import fb from "../assets/fb.png";
+import x from "../assets/x.png";
+import insta from "../assets/insta.jfif";
 
 import { Link } from "react-router-dom";
 
@@ -8,17 +10,17 @@ export default function Footer() {
         <div className='flex justify-center p-3'>
             <li className="size-10 bg-amber-500 list-none mx-5 text-center items-center justify-center">
                 <a href="http://" className="bg-green-300">
-                    <img src="" alt="fb"/>
+                    <img src={fb} alt="fb"/>
                 </a>
             </li>
             <li className="size-10 bg-amber-500 list-none mx-5 text-center items-center justify-center">
                 <a href="http://">
-                    <img src="" alt="inst"/>
+                    <img src={insta} className="size-10" alt="inst"/>
                 </a>
             </li >
-            <li className="size-10 bg-amber-500 list-none mx-5 text-center items-center justify-center">
+            <li className="size-9 bg-amber-500 list-none mx-5 text-center items-center justify-center">
                 <a href="http://">
-                    <img src="" alt="tw"/>
+                    <img src={x} alt="tw"/>
                 </a>
             </li>
         </div>

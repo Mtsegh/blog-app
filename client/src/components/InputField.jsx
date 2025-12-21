@@ -13,7 +13,7 @@ export default function InputField({
             </label>
             <div className="relative">
                 <input
-                    className={`input input-bordered w-full pl-10 bg-base-100/10 ${style}`}
+                    className={`input input-bordered w-full pl-10 bg-base-100/10`}
                     {...props}
                     required
                 />

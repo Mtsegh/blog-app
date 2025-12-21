@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from "react-hot-toast"
 import { Loader } from "lucide-react"
-import { BlogByPage, BlogPage, CreateBlogPage, DashboardPage, EditBlogPage, EditProfilePage, EmailVerificationPage, ForgotPasswordPage, HomePage, LoginPage, ProfilePage, ResetPasswordPage, SearchPage, SettingsPage, SignUpPage } from './pages';
+import { CategoryPage, BlogPage, CreateBlogPage, DashboardPage, EditBlogPage, EditProfilePage, EmailVerificationPage, ForgotPasswordPage, HomePage, LoginPage, ProfilePage, ResetPasswordPage, SearchPage, SettingsPage, SignUpPage, AuthorsPage } from './pages';
 import useAuthStore from './store/useAuthStore';
 import { BlogEditor, Footer, LoadingSpinner } from './components';
 import { MainLayout } from './Layout';
@@ -14,8 +14,9 @@ const ProtectedRoute = ({ children }) => {
 	if (!authUser) {
 		return <Navigate to='/' replace />;
 	}
-
+	
 	if (!authUser.isVerified) {
+		console.log("redirecting!!!!!!!")
 		return <Navigate to='/verify-email' replace />;
 	}
 
@@ -27,9 +28,10 @@ const RedirectAuthenticatedUser = ({ children }) => {
 	const { authUser } = useAuthStore();
 
 	if (authUser && authUser.isVerified) {
+		console.log("redirecting!!!!!!!")
 		return <Navigate to='/dashboard' replace />;
 	}
-
+	
 	return children;
 };
 
@@ -52,6 +54,11 @@ export default function App() {
 						element={ <HomePage /> }
 					/>
 					<Route
+						path='/stories/:sort'
+						element={ <HomePage /> }
+					/>
+					{"@gpt here :sort refers to sorting criteria like 'latest' or 'top' to organize stories on the HomePage."}
+					<Route
 						path='/dashboard'
 						element={
 							<ProtectedRoute>
@@ -63,9 +70,6 @@ export default function App() {
 						path='/profile'
 						element={
 							<ProfilePage />
-							// <ProtectedRoute>
-							// 	<ProfilePage />
-							// </ProtectedRoute>
 						}
 					/>
 					
@@ -78,9 +82,17 @@ export default function App() {
 						element={ <SearchPage /> }
 					/>
 					<Route
-						path='/blog-group'
-						element={ <BlogByPage /> /* showing the authors profile or category's library */}
-					/>
+						path='/topics/:topicName'
+						element={ <CategoryPage /> }
+					/>				
+					<Route
+						path='/topics'
+						element={ <CategoryPage /> }
+					/>					
+					<Route
+						path='/authors'
+						element={ <AuthorsPage /> }
+					/>					
 				</Route>
 
 				<Route
@@ -93,7 +105,7 @@ export default function App() {
 					}
 				/>
 				<Route
-					path='/write'
+					path='/create-story'
 					element={
 						<ProtectedRoute>
 							<CreateBlogPage />
@@ -101,7 +113,7 @@ export default function App() {
 					}
 				/>
 				<Route
-					path='/edit'
+					path='/edit-story/:slug'
 					element={
 						<ProtectedRoute>
 							<EditBlogPage />

@@ -1,32 +1,42 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, useParams } from 'react-router-dom'
 import BlogEditor from '../../components/BlogEditor'
 import useBlogStore from '../../store/useBlogStore'
 import useAuthStore from '../../store/useAuthStore';
+import { useEffect } from 'react';
+import { LoadingSpinner } from '../../components';
 
 export default function EditBlogPage() {
-    const { blogData } = useBlogStore();
+    const { slug } = useParams();
+    
+    const { blogData, getCategories, isLoadingBlog, getBlog } = useBlogStore();
     const { authUser } = useAuthStore();
 
-    if (!blogData || blogData.authorId !== authUser) {
-        return (<Navigate to={'/'} replace/>)
-    }
-    const { getCategories } = useBlogStore();
-
-    React.useEffect(() => {
+    useEffect(() => {
+        console.log("am here");
+        
+        getBlog(slug);
         getCategories();
-    }, [getCategories]);
-
-    const props = {
-        content: blogData.htmlContent,
-        formData: {
-            title: blogData.title,
-            base64Img: blogData.coverImage,
-            selectedCategory: blogData.category,
-            tags: blogData.tags,
-        }
+    }, [slug, getBlog, getCategories]);
+    
+    if (!isLoadingBlog && blogData && blogData.authorId !== authUser._id) {
+        console.log("Redirecting...", blogData, authUser);
+        return (<Navigate to={`/${slug}`} replace/>)
     }
-
+    
+    if (isLoadingBlog || !blogData) {
+        return <LoadingSpinner />
+    }
+    
     return (
-        <BlogEditor props={props} />
+        <BlogEditor
+            content={blogData.htmlContent}
+            formData={{
+                title: blogData.title,
+                base64Img: blogData.coverImage,
+                selectedCategory: blogData.category,
+                tags: blogData.tags,
+                slug: blogData.slug,
+            }}
+        />
     )
 }

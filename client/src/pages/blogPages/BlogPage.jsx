@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import useBlogStore from "../../store/useBlogStore";
 import useAuthStore from "../../store/useAuthStore";
-import { LoadingSpinner } from "../../components";
+import { HeartBurst, LoadingSpinner } from "../../components";
 import parse from "html-react-parser";
 import {
   Heart,
@@ -23,15 +23,28 @@ export default function BlogPage() {
     blogData,
     publishBlog,
     deleteBlog,
-    likeBlog
+    likeBlog,
+    hasLikedPost,
   } = useBlogStore();
 
-  const [liked, setLiked] = useState(false);
+  const [userLikes, setUserLikes] = useState(0);
+  const [likesCount, setLikesCount] = useState(0);
+  const [burstKey, setBurstKey] = useState(0);
+
 
   // Fetch Blog
   useEffect(() => {
     getBlog(slug);
   }, [getBlog, slug]);
+
+  useEffect(() => {
+    if (!blogData) return;
+
+    setLikesCount(blogData.likes || 0);
+    setUserLikes(useBlogStore.getState().getUserLikes(blogData.slug));
+  }, [blogData]);
+
+
 
   if (isLoadingBlog) return <LoadingSpinner />;
 
@@ -42,16 +55,36 @@ export default function BlogPage() {
       </div>
     );
 
-  const isAuthor = authUser && authUser._id === blogData.author._id;
+  const isAuthor = authUser && authUser._id === blogData.authorId;
 
-  // Like button local toggle
-  const handleLike = () => {
-    setLiked(!liked);
-    likeBlog(slug);
+  const handleLike = async () => {
+    if (userLikes >= 100) return;
+
+    setBurstKey((k) => k + 1); // 🔥 retrigger animation
+    setUserLikes((prev) => prev + 1);
+    setLikesCount((prev) => prev + 1);
+
+    try {
+      await likeBlog(slug);
+    } catch (err) {
+      setUserLikes((prev) => prev - 1);
+      setLikesCount((prev) => prev - 1);
+    }
   };
 
+
+
+  const handleDeletedBlog = async () => {
+    const res = await deleteBlog(slug);
+    if (res) {
+      <Navigate to={"/dashboard"} replace />
+    }
+  };
+
+
+
   return (
-    <div className="max-w-6xl mx-auto flex gap-8 px-4 py-10">
+    <div className="max-w-6xl mx-auto flex gap-8 py-10">
 
       {/* LEFT — Sticky Author Tools / Actions */}
       <div className="hidden md:flex flex-col gap-4 sticky top-28 h-fit">
@@ -60,12 +93,17 @@ export default function BlogPage() {
           onClick={handleLike}
           className="flex flex-col items-center group"
         >
-          <Heart
-            className={`size-7 transition-all duration-200 ${
-              liked ? "text-red-500 fill-red-500" : "text-gray-400"
-            }`}
-          />
-          <span className="text-sm text-gray-600">{blogData.likes}</span>
+          <div className="relative">
+            <HeartBurst burstKey={burstKey} />
+            <Heart
+              className={`size-7 transition-transform duration-150 ${
+                userLikes > 0
+                  ? "text-red-500 fill-red-500 scale-110"
+                  : "text-gray-400"
+              }`}
+            />
+          </div>
+          <span className="text-sm text-gray-600">{likesCount}</span>
         </button>
 
         {/* Share Button */}
@@ -78,7 +116,7 @@ export default function BlogPage() {
         {isAuthor && (
           <>
             <Link
-              to={`/edit?slug=${slug}`}
+              to={`/edit-story/${slug}`}
               className="flex flex-col items-center group"
             >
               <Pencil className="size-6 text-blue-500 group-hover:text-blue-700" />
@@ -86,6 +124,7 @@ export default function BlogPage() {
             </Link>
 
             {!blogData.published ? (
+              
               <button
                 onClick={() => publishBlog(slug)}
                 className="flex flex-col items-center group"
@@ -96,7 +135,7 @@ export default function BlogPage() {
             ) : null}
 
             <button
-              onClick={() => deleteBlog(slug)}
+              onClick={handleDeletedBlog}
               className="flex flex-col items-center group"
             >
               <Trash2 className="size-6 text-red-500 group-hover:text-red-700" />
@@ -107,7 +146,7 @@ export default function BlogPage() {
       </div>
 
       {/* RIGHT — Blog Content */}
-      <div className="flex-1">
+      <div className="flex-1 mx-4">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">
           {blogData.title}
         </h1>
@@ -143,21 +182,55 @@ export default function BlogPage() {
         </div>
 
         {/* Bottom Like for mobile */}
-        <div className="md:hidden flex gap-6 justify-center mt-10">
-          <button onClick={handleLike} className="flex flex-col items-center">
+      </div>
+      <div className="md:hidden bottom-0 fixed bg-white flex gap-6 justify-around mt-10 w-full h-16 items-center p-2 border-t border-gray-300">
+        <button onClick={handleLike} className="flex gap-1 items-center">
+          <div className="relative">
+            <HeartBurst burstKey={burstKey} />
             <Heart
-              className={`size-7 transition-all duration-200 ${
-                liked ? "text-red-500 fill-red-500" : "text-gray-400"
+              className={`size-7 transition-transform duration-150 ${
+                userLikes > 0
+                  ? "text-red-500 fill-red-500 scale-110"
+                  : "text-gray-400"
               }`}
             />
-            <span className="text-sm text-gray-600">{blogData.likes}</span>
-          </button>
+          </div>
+          <span className="text-md text-gray-600">{likesCount}</span>
+        </button>
+        {isAuthor && (
+          <>
+            <Link
+              to={`/edit-story/${slug}`}
+              className="flex flex-col items-center group"
+            >
+              <Pencil className="size-6 text-blue-500 group-hover:text-blue-700" />
+              <span className="text-xs text-blue-500">Edit</span>
+            </Link>
 
-          <button className="flex flex-col items-center">
-            <Share2 className="size-6 text-gray-500" />
-            <span className="text-xs text-gray-500">Share</span>
-          </button>
-        </div>
+            {!blogData.published ? (
+              
+              <button
+                onClick={() => publishBlog(slug)}
+                className="flex flex-col items-center group"
+              >
+                <CheckCircle className="size-6 text-green-600 group-hover:text-green-700" />
+                <span className="text-xs text-green-600">Publish</span>
+              </button>
+            ) : null}
+
+            <button
+              onClick={handleDeletedBlog}
+              className="flex flex-col items-center group"
+            >
+              <Trash2 className="size-6 text-red-500 group-hover:text-red-700" />
+              <span className="text-xs text-red-500">Delete</span>
+            </button>
+          </>
+        )}
+        <button className="flex flex-col items-center">
+          <Share2 className="size-6 text-gray-500" />
+          <span className="text-xs text-gray-500">Share</span>
+        </button>
       </div>
     </div>
   );

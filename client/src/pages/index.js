@@ -2,7 +2,8 @@
 export { default as HomePage } from "./blogPages/Homepage";
 export { default as BlogPage } from "./blogPages/BlogPage";
 export { default as SettingsPage } from "./blogPages/SettingsPage";
-export { default as BlogByPage } from "./blogPages/BlogByPage";
+export { default as CategoryPage } from "./blogPages/CategoryPage";
+export { default as AuthorsPage } from "./blogPages/AuthorsPage";
 export { default as CreateBlogPage } from "./blogPages/CreateBlogPage";
 export { default as EditBlogPage } from "./blogPages/EditBlogPage";
 export { default as SearchPage } from "./blogPages/SearchPage";

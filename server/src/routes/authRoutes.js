@@ -1,5 +1,5 @@
 import express from "express";
-import { checkAuth, forgotPassword, login, logout, resendVerificationEmail, signup, updateProfilePic, verifyEmail } from "../controllers/userController.js";
+import { checkAuth, forgotPassword, login, logout, resendVerificationEmail, resetPassword, signup, updateProfile, verifyEmail } from "../controllers/userController.js";
 import { protectRoute } from "../middlewares/authMiddleware.js";
 
 const router = express.Router()
@@ -14,12 +14,14 @@ router.post("/signup", signup);
 
 router.post("/logout", logout);
 
-router.put("/update-profile", protectRoute, updateProfilePic);
+router.patch("/update-profile", protectRoute, updateProfile);
 
 router.get("/check", protectRoute, checkAuth);
 
 router.post("/resend-auth-email", resendVerificationEmail);
 
 router.post("/forgot-password", forgotPassword);
+
+router.patch("/reset-password/:token", resetPassword);
 
 export default router;

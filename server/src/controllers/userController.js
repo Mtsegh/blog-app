@@ -1,15 +1,17 @@
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
-import { sendAuthEmail } from "../emails/emailHandler.js";
+import { sendAuthEmail, sendPasswordResetEmail } from "../emails/emailHandler.js";
 import User from "../models/userModel.js";
 import { generateToken } from "../lib/generateWebToken.js";
 import generateEmailAuthToken from "../utils/authToken.js";
+import cloudinary from "../lib/cloudinary.js";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const signup = async (req, res) => {
     try {
         const { fullname, username, email, password } = req.body;
+        
         if (!fullname || !username || !email || !password) {
             return res.status(400).json({ message: "Please enter all fields" })
         };
@@ -43,7 +45,7 @@ export const signup = async (req, res) => {
         
         if (newUser) {
             await newUser.save();
-            generateToken(user._id, res);
+            generateToken(newUser._id, res);
             await sendAuthEmail(email, fullname, verificationToken);
             
             res.status(201).json({
@@ -51,7 +53,8 @@ export const signup = async (req, res) => {
                 fullname: newUser.fullname,
                 username: newUser.username,
                 email: newUser.email,
-                profilePic: newUser.profilePic,
+                isVerified: newUser.isVerified,
+                profileImage: newUser.profileImage,
                 lastSentAt: Date.now(),
                 message: "User created successfully, please verify your email",
             });
@@ -78,8 +81,6 @@ export const login = async (req, res) => {
         if (emailRegex.test(usernameOrEmail)) {
             user = await User.findOne({ email: usernameOrEmail });
         } else {
-            console.log("am here", usernameOrEmail);
-            
             user = await User.findOne({ username: usernameOrEmail });
         }
 
@@ -93,19 +94,21 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: "Invalid credentials, here" })
         }
 
+        generateToken(user._id, res);
         if (!user.isVerified) {
             const reqObj = { body: { email: user.email } };
             await resendVerificationEmail(reqObj, res);
             return;
         }
-        generateToken(user._id, res);
 
         res.status(200).json({
             _id: user._id,
             fullName: user.fullName,
             username: user.username,
             email: user.email,
-            profilePic: user.profilePic
+            profileImage: user.profileImage,
+            isVerified: user.isVerified,
+            message: "Logged in successfully",
         });
     } catch (error) {
         console.log("Error in login controller: ", error.message);
@@ -115,10 +118,12 @@ export const login = async (req, res) => {
 
 export const verifyEmail = async (req, res) => {
     try {
-        const { token } = req.body; // if sent as ?token=...
+        const { token, email } = req.body; // if sent as ?token=...
         if (!token) return res.status(400).json({ message: "Missing token" });
-
+        console.log(req.body);
+        
         const user = await User.findOne({
+            email: email,
 			verificationToken: token,
 			verificationTokenExpiresAt: { $gt: Date.now() },
 		});
@@ -132,7 +137,7 @@ export const verifyEmail = async (req, res) => {
 		user.verificationTokenExpiresAt = undefined;
         await user.save();
 
-        res.status(200).json({ message: "Email verified successfully!" });
+        res.status(200).json({ message: "Email verified successfully!", data: user });
     } catch (err) {
         console.log("Error in verifyEmail controller: ", err.message);
         res.status(500).json({ message: "Internal server error" });
@@ -142,10 +147,10 @@ export const verifyEmail = async (req, res) => {
 
 export const checkAuth = async (req, res) => {
     try {
-        if (!req.user.isVerified) {
-            await resendVerificationEmail(req.user.email, res);
-            return;
-        }
+        // if (!req.user.isVerified) {
+        //     await resendVerificationEmail(req.user.email, res);
+        //     return;
+        // }
         res.status(200).json(req.user);
     } catch (error) {
         console.log("Error in checkAuth controller: ", error.message);
@@ -163,29 +168,40 @@ export const logout = async (req, res) => {
     }
 }
 
-export const updateProfilePic = async (req, res) => {
+export const updateProfile = async (req, res) => {
     try {
-        const { profilePic } = req.body;
+        const { profileImage, coverImage, fullname, bio } = req.body;
+
         const userId = req.user._id;
 
-        if (!profilePic) {
-            return res.status(400).json({ message: "Profile pic is required"})
+        const updateFields = {};
+
+        if (fullname) updateFields.fullname = fullname;
+        if (bio) updateFields.bio = bio;
+
+        if (profileImage) {
+            const uploaded = await cloudinary.uploader.upload(profileImage);
+            updateFields.profileImage = uploaded.secure_url;
         }
 
-        const uploadResponse = await cloudinary.uploader.upload(profilePic)
-        const updateUser = await User.findByIdAndUpdate(
-            userId,
-            { profilePic: uploadResponse.secure_url },
-            { new: true }
+        if (coverImage) {
+            const uploaded = await cloudinary.uploader.upload(coverImage);
+            updateFields.coverImage = uploaded.secure_url;
+        }
+        console.log("Update fields: ", updateFields);
+        const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        updateFields,
+        { new: true }
         );
 
-
-        res.status(200).json(updateUser)
+        res.status(200).json(updatedUser);
     } catch (error) {
-        console.log("Error in update profile controller: ", error.message);
-        res.status(500).json({ message: "Internal Server Error" })
+        console.log("Error in update profile controller:", error);
+        res.status(500).json({ message: "Internal Server Error" });
     }
-}
+};
+
 
 export const resendVerificationEmail = async (req, res) => {
   try {
@@ -225,7 +241,14 @@ export const resendVerificationEmail = async (req, res) => {
     
     res
       .status(200)
-      .json({ message: "New verification email sent successfully" });
+      .json({ message: "New verification email sent successfully",
+        _id: user._id,
+        fullName: user.fullName,
+        username: user.username,
+        email: user.email,
+        isVerified: user.isVerified,
+        profileImage: user.profileImage,
+       });
   } catch (error) {
         console.log("Error in update resendAuthEmail controller: ", error.message);
         res.status(500).json({ message: "Internal Server Error" })
@@ -233,7 +256,7 @@ export const resendVerificationEmail = async (req, res) => {
 };
 export const deleteUsers = async (req, res) => {
   try {
-    const deleted = await await User.deleteMany({});
+    const deleted = await User.deleteMany({});
 
     
     res
@@ -262,8 +285,8 @@ export const forgotPassword = async (req, res) => {
 		await user.save();
 
 		// send email
-		await sendPasswordResetEmail(user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
-
+		await sendPasswordResetEmail(user.email, user.fullname, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
+        console.log("Password reset email sent to ", user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
 		res.status(200).json({ message: "Password reset link sent to your email" });
 	} catch (error) {
 		console.log("Error in forgotPassword ", error);
@@ -294,7 +317,7 @@ export const resetPassword = async (req, res) => {
 		user.resetPasswordExpiresAt = undefined;
 		await user.save();
 
-		await sendResetSuccessEmail(user.email);
+		// await sendResetSuccessEmail(user.email);
 
 		res.status(200).json({ success: true, message: "Password reset successful" });
 	} catch (error) {

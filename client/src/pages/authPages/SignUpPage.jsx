@@ -10,11 +10,11 @@ export default function SignUpPage() {
 
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
-        fullName: "",
+        fullname: "",
         username: "",
         email: "",
         password: "",
-        comfirmPassword: "",
+        confirmPassword: "",
     });
 
     const { signup, isSigningUp } = useAuthStore();
@@ -28,13 +28,13 @@ export default function SignUpPage() {
     };
 
     const validateForm = () => {
-        if (!formData.fullName.trim()) return toast.error("Full name is required");
+        if (!formData.fullname.trim()) return toast.error("Full name is required");
         if (!formData.email.trim()) return toast.error("Email is required");
         if (!formData.username.trim()) return toast.error("Username is required");
         if (!/\S+@\S+\.\S+/.test(formData.email)) return toast.error("Invalid email format");
         if (!formData.password) return toast.error("Password is required");
         if (formData.password.length < 6) return toast.error("Password must be at least 6 characters");
-        if (formData.password !== formData.comfirmPassword) return toast.error("Comfirm Password must match Password");
+        if (formData.password !== formData.confirmPassword) return toast.error("confirm Password must match Password");
 
         return true;
     };
@@ -70,8 +70,8 @@ export default function SignUpPage() {
                     Icon={User}
                     type={"text"}
                     placeholder={"Paula Paul"}
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    value={formData.fullname}
+                    onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
                 />
                 <InputField
                     label={"Username"}
@@ -98,13 +98,13 @@ export default function SignUpPage() {
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
                 <InputField
-                    label={"Comfirm Password"}
+                    label={"confirm Password"}
                     Icon={Lock}
                     type={showPassword ? "text" : "password"}
                     style={"mb-1"}
                     placeholder={"********"}
-                    value={formData.comfirmPassword}
-                    onChange={(e) => setFormData({ ...formData, comfirmPassword: e.target.value })}
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 />
                 <label className='flex items-center space-x-2 cursor-pointer top-0 pt-0 mt-0'>
                     <input

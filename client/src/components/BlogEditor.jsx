@@ -8,14 +8,15 @@ import useBlogStore from "../store/useBlogStore";
 import { toast } from "react-hot-toast"
 import { useNavigate } from "react-router-dom";
 
-export default function BlogEditor(props) {
+export default function BlogEditor({ content: initialContent, formData: initialFormData }) {
     const { quill, quillRef } = useQuill({
         modules: modules,
         formats: formats
     })
     const navigate = useNavigate()
-    const { isSavingBlog, saveBlog, categories } = useBlogStore()
+    const { isSavingBlog, createBlog, updateBlog, categories } = useBlogStore()
 
+    const [initialized, setInitialized] = useState(false);
     const [imageName, setImageName] = useState(<p className="text-gray-400">Select cover photo</p>);
     const [content, setContent] = useState("");
     const [formData, setFormData] = useState({
@@ -23,25 +24,42 @@ export default function BlogEditor(props) {
         base64Img: "",
         selectedCategory: "Select Category",
         tags: "",
+        slug: "",
     });
 
     useEffect(() => {
-        if (quill) {
-            quill.on('text-change', (delta, oldDelta, source) => {
-                console.log(quill.root.innerHTML);
-                setContent(quill.root.innerHTML)          
-            })
-        }
+        if (!quill) return;
+
+        const handler = () => {
+            setContent(quill.root.innerHTML);
+        };
+
+        quill.on("text-change", handler);
+
+        return () => {
+            quill.off("text-change", handler);
+        };
     }, [quill]);
-    
+
+
+
     useEffect(() => {
-        if (props.formData && content === "") {
-            console.log("Props in BlogEditor: ", props);
+        if (!initialized && initialFormData) {
+            console.log(initialFormData);
+            
             setImageName(<p className="text-gray-400">Change cover photo</p>);
-            setContent(props.content);
-            setFormData(props.formData);
+            setFormData(initialFormData);
+            setInitialized(true);
         }
-    }, [props.formData, props.content, content]);
+    }, [initialFormData, initialized]);
+
+
+    useEffect(() => {
+        if (quill && initialContent) {
+            quill.root.innerHTML = initialContent;
+            setContent(initialContent);
+        }
+    }, [quill, initialContent]);
 
 
     const handleImageUpload = (e) => {
@@ -49,14 +67,13 @@ export default function BlogEditor(props) {
         if (!file) return;
         
         setImageName(file.name);
-        console.log(file.name)
         const reader = new FileReader();
 
         reader.readAsDataURL(file)
         reader.onload = async () => {
             const base64Image = reader.result;
             setFormData({ ...formData, base64Img: base64Image })
-            // await updateProfile({ profilePic: base64Image });
+            // await updateProfile({ profileImage: base64Image });
         }
     }
 
@@ -68,15 +85,23 @@ export default function BlogEditor(props) {
         if (!formData.tags.trim()) return toast.error("At least one tag required");
         if (!content) return toast.error("Blog body should not be empty");
         
-        const newBlog = {
+        const blogPayload = {
             title: formData.title,
             htmlContent: content,
             coverImage: formData.base64Img,
             category: formData.selectedCategory,
             tags: formData.tags,
+            slug: formData.slug,
         };
-        const savedBlog = await saveBlog(newBlog);
-        console.log("Saved blog: ", savedBlog);
+
+        const isEdit = Boolean(initialContent);
+        let savedBlog;
+        if (isEdit) {
+            savedBlog = await updateBlog(blogPayload);
+        } else {
+            savedBlog = await createBlog(blogPayload);
+        }
+        
         if (savedBlog?.slug) navigate(`/blog/${savedBlog.slug}`);
     }
 
@@ -144,14 +169,17 @@ export default function BlogEditor(props) {
                     Select Category
                     </label>
                     <select
-                    id="description"
-                    onChange={(e) => setFormData({ ...formData, selectedCategory: e.target.value })}
-                    value={formData.selectedCategory}
-                    className={`select ${"block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400  sm:text-sm sm:leading-6"}`}
-                    placeholder="Write your thoughts here..."
+                        id="description"
+                        onChange={(e) => setFormData({ ...formData, selectedCategory: e.target.value })}
+                        value={formData.selectedCategory}
+                        className={`select ${"block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400  sm:text-sm sm:leading-6"}`}
+                        placeholder="Write your thoughts here..."
                     >
                         <option disabled>Select Category</option>
-                        {categories.map((category) => { return <option key={category._id}>{category.category}</option> })}
+                        {categories.map((category) => { 
+                            return <option key={category._id} value={category.category}>
+                                {category.category}
+                            </option>})}
                     </select>
                 </div>
                 {/* Content */}
