@@ -95,7 +95,7 @@ export default function EditProfilePage() {
     return true;
   };
 
-  // ✅ Detect if user changed name or username
+  // ✅ Detect if user changed name or userSlug
   const isChanged = () => {
     return (
       formData.fullname.trim() !== authUser?.fullname ||

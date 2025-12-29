@@ -55,7 +55,7 @@ export default function BlogPage() {
       </div>
     );
 
-  const isAuthor = authUser && authUser._id === blogData.authorId;
+  const isAuthor = authUser && authUser._id === blogData?.author?._id;
 
   const handleLike = async () => {
     if (userLikes >= 100) return;
@@ -85,7 +85,6 @@ export default function BlogPage() {
 
   return (
     <div className="max-w-6xl mx-auto flex gap-8 py-10">
-
       {/* LEFT — Sticky Author Tools / Actions */}
       <div className="hidden md:flex flex-col gap-4 sticky top-28 h-fit">
         {/* Like Button */}
@@ -154,14 +153,14 @@ export default function BlogPage() {
         {/* Author Info */}
         <div className="flex items-center gap-3 mb-6">
           <img
-            src={blogData.author.avatar || "/default-avatar.png"}
+            src={blogData.author.profileImage || "../../assets/profileIcon.jpg"}
             alt="Author"
             className="size-10 rounded-full"
           />
           <div>
-            <p className="font-semibold">{blogData.author.username}</p>
+            <p className="font-semibold">{blogData?.author.fullname}</p>
             <p className="text-sm text-gray-500">
-              {new Date(blogData.publishedAt).toLocaleDateString()} •{" "}
+              {new Date(blogData.updatedAt).toLocaleDateString()} •{" "}
               {blogData.readTime || "5 min read"}
             </p>
           </div>
@@ -178,7 +177,7 @@ export default function BlogPage() {
 
         {/* Blog Content */}
         <div className="prose prose-lg max-w-none">
-          <div className="ql-editor">{parse(blogData.htmlContent)}</div>
+          <div className="ql-editor">{parse(blogData?.htmlContent)}</div>
         </div>
 
         {/* Bottom Like for mobile */}

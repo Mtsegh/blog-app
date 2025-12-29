@@ -1,16 +1,16 @@
 import Subscription from "../models/subscriptionModel.js";
 import User from "../models/userModel.js";
-import {Category} from "../models/categoryModel.js";
+import Topics from "../models/topicsModel.js";
 
 export const subscribe = async (req, res) => {
     try {
-        const { email, subscribeType } = req.body;
-        const { subscribeTo } = req.params;
+        const { email, subscribeTo } = req.body;
+        const { subscribeType } = req.params;
     
         if (!email) return res.status(400).json({ message: "Email is required" });
     
         // Validate target
-        const model = subscribeType === "Author" ? User : Category;
+        const model = subscribeType === "Author" ? User : Topics;
         const target = await model.findById(subscribeTo);
         if (!target) return res.status(400).json({ message: "Invalid target" });
     
@@ -30,7 +30,8 @@ export const subscribe = async (req, res) => {
 
 export const unsubscribe = async (req, res) => {
     try {
-        const { email, subscribeType, subscribeTo } = req.body;
+        const { email, subscribeTo } = req.body;
+        const { subscribeType } = req.params;
 
         const result = await Subscription.findOneAndDelete({
             email,

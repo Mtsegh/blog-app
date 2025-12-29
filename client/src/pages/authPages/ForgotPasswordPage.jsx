@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
     };
 
     const validateForm = () => {
-        if (!formData.email.trim()) return toast.error("Username is required");
+        if (!formData.email.trim()) return toast.error("Email is required");
         
         return true;
     };

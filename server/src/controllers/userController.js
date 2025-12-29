@@ -4,15 +4,17 @@ import { sendAuthEmail, sendPasswordResetEmail } from "../emails/emailHandler.js
 import User from "../models/userModel.js";
 import { generateToken } from "../lib/generateWebToken.js";
 import generateEmailAuthToken from "../utils/authToken.js";
-import cloudinary from "../lib/cloudinary.js";
+import slugify from "slugify";
+import { uploadToCloudinary } from "../utils/cloudinary.uploader.js";
+import { Blog } from "../models/blogModel.js";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const signup = async (req, res) => {
     try {
-        const { fullname, username, email, password } = req.body;
+        const { fullname, email, password } = req.body;
         
-        if (!fullname || !username || !email || !password) {
+        if (!fullname || !email || !password) {
             return res.status(400).json({ message: "Please enter all fields" })
         };
         
@@ -29,6 +31,17 @@ export const signup = async (req, res) => {
         
         if (user) return res.status(400).json({ message: "Email already exists" });
 
+        let userSlug = slugify(fullname, { lower: true, strict: true });
+        let existing = await User.findOne({ userSlug });
+        let counter = 1;
+
+    // Append number if slug already exists
+        while (existing) {
+            userSlug = `${slugify(fullname, { lower: true, strict: true })}-${counter}`;
+            existing = await User.findOne({ userSlug });
+            counter++;
+        }   
+
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(password, salt)
 
@@ -36,7 +49,7 @@ export const signup = async (req, res) => {
         
         const newUser = new User({
             fullname,
-            username: username.toLowerCase(),
+            userSlug,
             email,
             password: hashedPassword,
             verificationToken,
@@ -51,7 +64,7 @@ export const signup = async (req, res) => {
             res.status(201).json({
                 _id: newUser._id,
                 fullname: newUser.fullname,
-                username: newUser.username,
+                userSlug: newUser.userSlug,
                 email: newUser.email,
                 isVerified: newUser.isVerified,
                 profileImage: newUser.profileImage,
@@ -64,24 +77,24 @@ export const signup = async (req, res) => {
             res.status(400).json({ message: "invalid user data" })
         }
     } catch (error) {
-        console.log("Error in signup controller: ", error.message);
+        // console.log("Error in signup controller: ", error.message);
         res.status(500).json({ message: "Internal Server Error" })
     }
 }
 
 export const login = async (req, res) => {
     try {
-        const { usernameOrEmail, password } = req.body;
-        // TODO: Allow writer to login with username or email 
-        if (!usernameOrEmail || !password) {
+        const { userSlugOrEmail, password } = req.body;
+        // TODO: Allow writer to login with userSlug or email 
+        if (!userSlugOrEmail || !password) {
             return res.status(400).json({ message: "Please enter all fields" })
         };
 
         let user;
-        if (emailRegex.test(usernameOrEmail)) {
-            user = await User.findOne({ email: usernameOrEmail });
+        if (emailRegex.test(userSlugOrEmail)) {
+            user = await User.findOne({ email: userSlugOrEmail });
         } else {
-            user = await User.findOne({ username: usernameOrEmail });
+            user = await User.findOne({ userSlug: userSlugOrEmail });
         }
 
 
@@ -103,15 +116,15 @@ export const login = async (req, res) => {
 
         res.status(200).json({
             _id: user._id,
-            fullName: user.fullName,
-            username: user.username,
+            fullname: user.fullname,
+            userSlug: user.userSlug,
             email: user.email,
             profileImage: user.profileImage,
             isVerified: user.isVerified,
             message: "Logged in successfully",
         });
     } catch (error) {
-        console.log("Error in login controller: ", error.message);
+        // console.log("Error in login controller: ", error.message);
         res.status(500).json({ message: "Internal Server Error" })
     };
 };
@@ -120,7 +133,7 @@ export const verifyEmail = async (req, res) => {
     try {
         const { token, email } = req.body; // if sent as ?token=...
         if (!token) return res.status(400).json({ message: "Missing token" });
-        console.log(req.body);
+        // console.log(req.body);
         
         const user = await User.findOne({
             email: email,
@@ -139,7 +152,7 @@ export const verifyEmail = async (req, res) => {
 
         res.status(200).json({ message: "Email verified successfully!", data: user });
     } catch (err) {
-        console.log("Error in verifyEmail controller: ", err.message);
+        // console.log("Error in verifyEmail controller: ", err.message);
         res.status(500).json({ message: "Internal server error" });
     }
 };
@@ -151,9 +164,10 @@ export const checkAuth = async (req, res) => {
         //     await resendVerificationEmail(req.user.email, res);
         //     return;
         // }
+
         res.status(200).json(req.user);
     } catch (error) {
-        console.log("Error in checkAuth controller: ", error.message);
+        // console.log("Error in checkAuth controller: ", error.message);
         res.status(500).json({ message: "Internal Server Error" })
     }
 }
@@ -163,7 +177,7 @@ export const logout = async (req, res) => {
         res.cookie("jwt", "", { maxAge: 0 })
         res.status(200).json({ message: "Logged Out Successfully" })
     } catch (error) {
-        console.log("Error in signup controller: ", error.message);
+        // console.log("Error in signup controller: ", error.message);
         res.status(500).json({ message: "Internal Server Error" })
     }
 }
@@ -176,19 +190,32 @@ export const updateProfile = async (req, res) => {
 
         const updateFields = {};
 
-        if (fullname) updateFields.fullname = fullname;
+        if (fullname) {
+            let userSlug = slugify(fullname, { lower: true, strict: true });
+            let existing = await User.findOne({ userSlug });
+            let counter = 1;
+            
+
+            while (existing) {
+                userSlug = `${slugify(fullname, { lower: true, strict: true })}-${counter}`;
+                existing = await User.findOne({ userSlug });
+                counter++;
+            }
+            updateFields.fullname = fullname;
+            updateFields.userSlug = userSlug;
+        }
         if (bio) updateFields.bio = bio;
 
         if (profileImage) {
-            const uploaded = await cloudinary.uploader.upload(profileImage);
-            updateFields.profileImage = uploaded.secure_url;
+            const uploaded = await uploadToCloudinary([profileImage], {folder: 'user/content'});
+            updateFields.profileImage = uploaded[0];
         }
 
         if (coverImage) {
-            const uploaded = await cloudinary.uploader.upload(coverImage);
+            const uploaded = await uploadToCloudinary([coverImage], {folder: 'user/content'});
             updateFields.coverImage = uploaded.secure_url;
         }
-        console.log("Update fields: ", updateFields);
+        
         const updatedUser = await User.findByIdAndUpdate(
         userId,
         updateFields,
@@ -197,7 +224,7 @@ export const updateProfile = async (req, res) => {
 
         res.status(200).json(updatedUser);
     } catch (error) {
-        console.log("Error in update profile controller:", error);
+        // console.log("Error in update profile controller:", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
@@ -244,13 +271,13 @@ export const resendVerificationEmail = async (req, res) => {
       .json({ message: "New verification email sent successfully",
         _id: user._id,
         fullName: user.fullName,
-        username: user.username,
+        userSlug: user.userSlug,
         email: user.email,
         isVerified: user.isVerified,
         profileImage: user.profileImage,
        });
   } catch (error) {
-        console.log("Error in update resendAuthEmail controller: ", error.message);
+        // console.log("Error in update resendAuthEmail controller: ", error.message);
         res.status(500).json({ message: "Internal Server Error" })
     }
 };
@@ -263,7 +290,7 @@ export const deleteUsers = async (req, res) => {
       .status(200)
       .json({ message: "Deleted successfully", deleted });
   } catch (error) {
-        console.log("Error in update resendAuthEmail controller: ", error.message);
+        // console.log("Error in update resendAuthEmail controller: ", error.message);
         res.status(500).json({ message: "Internal Server Error" })
     }
 };
@@ -286,10 +313,10 @@ export const forgotPassword = async (req, res) => {
 
 		// send email
 		await sendPasswordResetEmail(user.email, user.fullname, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
-        console.log("Password reset email sent to ", user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
+        // console.log("Password reset email sent to ", user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
 		res.status(200).json({ message: "Password reset link sent to your email" });
 	} catch (error) {
-		console.log("Error in forgotPassword ", error);
+		// console.log("Error in forgotPassword ", error);
 		res.status(400).json({ success: false, message: error.message });
 	}
 };
@@ -321,7 +348,81 @@ export const resetPassword = async (req, res) => {
 
 		res.status(200).json({ success: true, message: "Password reset successful" });
 	} catch (error) {
-		console.log("Error in resetPassword ", error);
+		// console.log("Error in resetPassword ", error);
 		res.status(400).json({ message: error.message });
 	}
+};
+
+export const getUsersWithPublishedBlogs = async (req, res) => {
+  try {
+    const users = await Blog.aggregate([
+      {
+        $match: { published: true }
+      },
+      {
+        $group: {
+          _id: "$author",
+          publishedBlogs: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user"
+        }
+      },
+      { $unwind: "$user" },
+      {
+        $project: {
+          _id: "$user._id",
+          fullname: "$user.fullname",
+          userSlug: "$user.userSlug",
+          bio: "$user.bio",
+          profileImage: "$user.profileImage",
+          publishedBlogs: 1
+        }
+      }
+    ]);
+
+    res.status(200).json({
+      count: users.length,
+      users
+    });
+  } catch (error) {
+    console.error("Error fetching users with published blogs:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getUserProfile = async (req, res) => {
+    try {
+        const { userSlug } = req.params;
+
+        const user = await User.findOne({
+            userSlug: userSlug,
+            isVerified: true, // 👈 ignore unverified users
+        })
+        .select(
+            "fullname userSlug bio profileImage coverImage createdAt"
+        )
+        .lean();
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found or not verified",
+            });
+        }
+
+        const blogCount = await Blog.countDocuments({
+            author: user._id,
+            published: true
+        });
+        user.no_of_blogs = blogCount;
+        res.status(200).json(user);
+    } catch (error) {
+        console.error("Error fetching profile:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
 };

@@ -26,6 +26,6 @@ app.use("/api/blogs", blogRoutes);
 const PORT = 5000 || process.env.PORT
 
 app.listen(PORT, () => {
-    console.log("Server running on port: " + PORT);
+    // console.log("Server running on port: " + PORT);
     connectDB();
 })

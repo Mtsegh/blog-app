@@ -47,8 +47,8 @@ export default function EmailVerificationPage() {
                 >
                     <img src={pen} className="size-14" />
                 </div>
-                <h1 className="text-2xl font-bold mt-2">Forgot Password</h1>
-                <p className="text-base-content/60">Enter your email address and we'll send you a link to reset your password.</p>
+                <h1 className="text-2xl font-bold mt-2">Verify Email</h1>
+                <p className="text-base-content/60">Enter the verification token sent to your email.</p>
                 </div>
             </div>
 

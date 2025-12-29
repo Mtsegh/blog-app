@@ -1,5 +1,5 @@
 import * as cheerio from "cheerio";
-import uploadToCloudinary from "./cloudinary.uploader.js";
+import { uploadToCloudinary } from "./cloudinary.uploader.js";
 import createDOMPurify from "dompurify";
 import { JSDOM } from "jsdom";
 
@@ -34,7 +34,7 @@ const replaceBase64WithLinks = (html, links) => {
 }
 
 // const result = extractBase64Images(str)
-// console.log(result);
+// // console.log(result);
 
 const proccessBlogHtml = async (html) => {
     try {
@@ -46,11 +46,11 @@ const proccessBlogHtml = async (html) => {
         const uploadedLinks = await uploadToCloudinary(base64Images);
         const finalHtml = replaceBase64WithLinks(html, uploadedLinks);
         const cleanHtml = DOMPurify.sanitize(finalHtml);
-        console.log("after DOM handling: ", cleanHtml);
+        // console.log("after DOM handling: ", cleanHtml);
     
         return cleanHtml;
     } catch (error) {
-        console.log("Error in update processBlogHtml controller: ", error);
+        // console.log("Error in update processBlogHtml controller: ", error);
         throw new Error("error in process Html", error.messae);
     }
 }

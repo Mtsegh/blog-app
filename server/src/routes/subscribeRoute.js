@@ -3,8 +3,8 @@ import { subscribe, unsubscribe } from "../controllers/subscribeController.js";
 
 const router = express.Router();
 
-router.post("/subscribe/:param",  subscribe);
+router.post("/subscribe/:subscribeType",  subscribe);
 
-router.get("/unsubscribe/:param", unsubscribe);
+router.get("/unsubscribe/:subscribeType", unsubscribe);
 
 export default router;

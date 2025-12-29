@@ -3,14 +3,14 @@ export const getBlogs = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = parseInt(req.query.skip) || 0;
 
-        const { author, category } = req.query;
+        const { author, topics } = req.query;
         const filter = { published: true };
 
         if (author) filter.authorId = author;
-        if (category) filter.category = category.toLowerCase();
+        if (topics) filter.topics = topics.toLowerCase();
 
-        if (!author && !category) {
-            return res.status(400).json({ message: "Provide either author or category" });
+        if (!author && !topics) {
+            return res.status(400).json({ message: "Provide either author or topics" });
         }
 
         const blogs = await Blog.find(filter)

@@ -19,15 +19,16 @@ const userSchema = mongoose.Schema({
         type: String,
         maxlength: [400, "Bio cannot exceed 150 characters"]
     },
-    username: {
+    userSlug: {
         type: String,
         required: true,
-        unique: [true, "Username is taken"]
+        unique: true,
+        index: true
     },
     subscribers: [String],
     profileImage: {
         type: String,
-        default: ""
+        default: "https://res.cloudinary.com/dz0sija7a/image/upload/v1766826956/user/content/ixfquskbh7cbu6z7emte.jpg"
     },
     coverImage: {
         type: String,
@@ -41,7 +42,7 @@ const userSchema = mongoose.Schema({
 	resetPasswordExpiresAt: Date,
 	verificationToken: String,
 	verificationTokenExpiresAt: Date,
-})
+}, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);
 

@@ -2,21 +2,22 @@ import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from "react-hot-toast"
 import { Loader } from "lucide-react"
-import { CategoryPage, BlogPage, CreateBlogPage, DashboardPage, EditBlogPage, EditProfilePage, EmailVerificationPage, ForgotPasswordPage, HomePage, LoginPage, ProfilePage, ResetPasswordPage, SearchPage, SettingsPage, SignUpPage, AuthorsPage } from './pages';
+import { BlogPage, CreateBlogPage, DashboardPage, EditBlogPage, EditProfilePage, EmailVerificationPage, ForgotPasswordPage, HomePage, LoginPage, ProfilePage, ResetPasswordPage, SearchPage, SettingsPage, SignUpPage, AuthorsPage, AddTopic, AllTopicsPage } from './pages';
 import useAuthStore from './store/useAuthStore';
-import { BlogEditor, Footer, LoadingSpinner } from './components';
+import { Footer, LoadingSpinner } from './components';
 import { MainLayout } from './Layout';
+import TopicsInfoPage from './pages/blogPages/TopicsInfoPage';
 
 
 const ProtectedRoute = ({ children }) => {
 	const { authUser } = useAuthStore();
 
 	if (!authUser) {
-		return <Navigate to='/' replace />;
+		return <Navigate to='/login' replace />;
 	}
-	
+	// console.log(authUser.isVerified);
 	if (!authUser.isVerified) {
-		console.log("redirecting!!!!!!!")
+		// console.log("redirecting!!!!!!!");
 		return <Navigate to='/verify-email' replace />;
 	}
 
@@ -27,17 +28,20 @@ const ProtectedRoute = ({ children }) => {
 const RedirectAuthenticatedUser = ({ children }) => {
 	const { authUser } = useAuthStore();
 
-	if (authUser && authUser.isVerified) {
-		console.log("redirecting!!!!!!!")
-		return <Navigate to='/dashboard' replace />;
+	if (authUser) {
+		if (authUser.isVerified) {
+			return <Navigate to='/dashboard' replace />;
+		} else if (!authUser.isVerified) {
+			return <Navigate to='/verify-email' replace />;
+		}
 	}
-	
+	// console.log("not redirecting!!!!!!!");
 	return children;
 };
 
 
 export default function App() {
-	const { isCheckingAuth, checkAuth } = useAuthStore();
+	const { isCheckingAuth, checkAuth, authUser } = useAuthStore();
 
 	useEffect(() => {
 		checkAuth();
@@ -57,7 +61,6 @@ export default function App() {
 						path='/stories/:sort'
 						element={ <HomePage /> }
 					/>
-					{"@gpt here :sort refers to sorting criteria like 'latest' or 'top' to organize stories on the HomePage."}
 					<Route
 						path='/dashboard'
 						element={
@@ -65,14 +68,7 @@ export default function App() {
 								<DashboardPage />
 							</ProtectedRoute>
 						}
-					/>
-					<Route
-						path='/profile'
-						element={
-							<ProfilePage />
-						}
-					/>
-					
+					/>					
 					<Route
 						path='/blog/:slug'
 						element={ <BlogPage /> }
@@ -82,26 +78,33 @@ export default function App() {
 						element={ <SearchPage /> }
 					/>
 					<Route
-						path='/topics/:topicName'
-						element={ <CategoryPage /> }
+						path='/topics/:topicSlug'
+						element={ <TopicsInfoPage /> }
 					/>				
 					<Route
 						path='/topics'
-						element={ <CategoryPage /> }
+						element={ <AllTopicsPage /> }
 					/>					
 					<Route
 						path='/authors'
 						element={ <AuthorsPage /> }
+					/>					
+					<Route
+						path='/authors/:userSlug'
+						element={ <ProfilePage /> }
+					/>					
+					<Route
+						path='/profile/:userSlug'
+						element={ <ProfilePage /> }
 					/>					
 				</Route>
 
 				<Route
 					path='/edit-profile'
 					element={
-						<EditProfilePage />
-						// <ProtectedRoute>
-						// 	<ProfilePage />
-						// </ProtectedRoute>
+						<ProtectedRoute>
+							<EditProfilePage />
+						</ProtectedRoute>
 					}
 				/>
 				<Route
@@ -109,6 +112,14 @@ export default function App() {
 					element={
 						<ProtectedRoute>
 							<CreateBlogPage />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path='/create-topic'
+					element={
+						<ProtectedRoute>
+							<AddTopic />
 						</ProtectedRoute>
 					}
 				/>
@@ -140,7 +151,13 @@ export default function App() {
 						</RedirectAuthenticatedUser>
 					}
 				/>
-				<Route path='/verify-email' element={<EmailVerificationPage />} />
+				<Route path='/verify-email'
+					element={
+						<RedirectAuthenticatedUser>
+							<EmailVerificationPage />
+						</RedirectAuthenticatedUser>
+					}
+				/>
 				<Route
 					path='/forgot-password'
 					element={

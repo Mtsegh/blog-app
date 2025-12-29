@@ -1,10 +1,15 @@
 import express from "express";
-import { addCategory, getCategories } from "../controllers/categoryController.js";
+import {
+  createTopics,
+  getCategories,
+  getTopicsWithBlogs
+} from "../controllers/topics.controller.js";
+import { protect, adminOnly } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/all-categories", getCategories);
-
-
+router.get("/", getCategories);               // categories + blogCount
+router.get("/:slug", getTopicsWithBlogs);   // topics + blogs
+router.post("/", protect, adminOnly, createTopics);
 
 export default router;

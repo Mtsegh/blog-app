@@ -3,11 +3,11 @@ import useBlogStore from '../../store/useBlogStore';
 import useAuthStore from '../../store/useAuthStore';
 import { BlogPreview, Loader2, LoadingSpinner } from '../../components';
 import { Link } from 'react-router-dom';
-import { formatPrettyDate } from '../../lib/formatDate';
+import profileIcon from "../../assets/profileIcon.jpg";
+import useCategoryStore from '../../store/useCategoryStore';
 
-function CategoryPage() {
-  const { categories, getCategories, isLoading } = useBlogStore();
-  const { authUser } = useAuthStore();
+function AuthorsPage() {
+  const { authors, getAuthors, loadingCat } = useCategoryStore();
   const [activeBtn, setActiveBtn] = useState({
     drafts: true,
     pending: false,
@@ -15,14 +15,14 @@ function CategoryPage() {
   });
 
   useEffect(() => {
-    getCategories();
-  }, [getCategories]);
+    getAuthors();
+  }, [getAuthors]);
 
   
   return (
     <div className="flex flex-col size-full top-20 p-4 ">
       <div className='self-center w-full sm:w-150 mb-4'>
-        <h1 className="text-xl font-bold my-5">Your Blogs</h1>
+        <h1 className="text-xl font-bold my-5">Our Authors</h1>
         <div className='flex flex-row gap-10 my-3 border-b border-gray-300 text-gray-500'>
             {/* <button className={`${activeBtn.drafts && 'border-b text-gray-900'} py-4`}
               onClick={() => {
@@ -44,27 +44,27 @@ function CategoryPage() {
               }>Pending</button> */}
         </div>
         <div className='flex flex-col'>
-          {isLoading ? <Loader2 /> :
-            ( (!categories || categories.length === 0) ?
-              <div className="text-center p-6">
-                No Topics Found
+          {loadingCat ? <Loader2 /> :
+            ( (!authors || authors.length === 0) ?
+            <div className="text-center p-6">
+                No Authors Found
               </div> :
-              categories.map((category) => (
-              <div className="flex border-b last:border-none border-gray-300 py-6" key={category._id}>
+              authors.map((author) => (
+                <div className="flex border-b last:border-none border-gray-300 py-6" key={author._id}>
                 <div className="size-30 mr-6 overflow-hidden rounded-md flex-shrink-0">
                   <img
-                    src={category.coverImage}
-                    alt={category.name}
+                    src={author?.profileImage || profileIcon}
+                    alt={author?.fullname}
                     className="w-full h-full object-cover"
-                  />
+                    />
                 </div>
 
                 <div className='flex flex-col'>
-                  <Link key={category._id} to={`/${category.name}`} className='font-semibold hover:underline'>
-                    {category.name}
+                  <Link key={author?._id} to={`/authors/${author?.userSlug}`} className='font-semibold hover:underline'>
+                    {author.fullname}
                   </Link>
-                  <p className='text-sm my-1'>{category.about}</p>
-                  <p className='text-xs'>{formatPrettyDate(category.updatedAt)}</p>
+                  <p className='text-sm my-1'>{author.bio}</p>
+                  <p className='text-xs text-gray-500'>Published {author.publishedBlogs} Blogs</p>
                 </div>
               </div>
               ))
@@ -76,4 +76,4 @@ function CategoryPage() {
   );
 }
 
-export default CategoryPage;
+export default AuthorsPage;

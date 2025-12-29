@@ -1,9 +1,9 @@
 import React from 'react'
-import BlogEditor from '../../components/BlogEditor'
-import useBlogStore from '../../store/useBlogStore';
+import BlogEditor from '../../components/BlogEditor';
+import useCategoryStore from '../../store/useCategoryStore';
 
 export default function CreateBlogPage() {
-    const { getCategories } = useBlogStore();
+    const { getCategories } = useCategoryStore();
 
     React.useEffect(() => {
         getCategories();

@@ -1,13 +1,14 @@
 import mongoose, { Schema } from "mongoose";
 
 const blogSchema = new mongoose.Schema({
-    authorId: {
+    author: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true,
     },
-    author: {
-        type: String,
+    category: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Topics",
         required: true,
     },
     title: {
@@ -29,7 +30,6 @@ const blogSchema = new mongoose.Schema({
         type: String
     },
     tags: [String],
-    category: [String],
     views: {
         type: Number,
         default: 0,
@@ -42,20 +42,13 @@ const blogSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    publishedAt: {
-        type: Date,
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now
-    },
 },
 {
     timestamps: true 
 })
+
+blogSchema.index({ author: 1, published: 1 });
+blogSchema.index({ category: 1, published: 1 });
+blogSchema.index({ published: 1, publishedAt: -1 });
 
 export const Blog = mongoose.model("Blog", blogSchema);

@@ -7,6 +7,7 @@ import { formats, modules } from "../lib/utils";
 import useBlogStore from "../store/useBlogStore";
 import { toast } from "react-hot-toast"
 import { useNavigate } from "react-router-dom";
+import useCategoryStore from "../store/useCategoryStore";
 
 export default function BlogEditor({ content: initialContent, formData: initialFormData }) {
     const { quill, quillRef } = useQuill({
@@ -14,7 +15,8 @@ export default function BlogEditor({ content: initialContent, formData: initialF
         formats: formats
     })
     const navigate = useNavigate()
-    const { isSavingBlog, createBlog, updateBlog, categories } = useBlogStore()
+    const { isSavingBlog, createBlog, updateBlog } = useBlogStore()
+    const { categories } = useCategoryStore();
 
     const [initialized, setInitialized] = useState(false);
     const [imageName, setImageName] = useState(<p className="text-gray-400">Select cover photo</p>);
@@ -22,7 +24,7 @@ export default function BlogEditor({ content: initialContent, formData: initialF
     const [formData, setFormData] = useState({
         title: "",
         base64Img: "",
-        selectedCategory: "Select Category",
+        selectedTopics: "Select Topics",
         tags: "",
         slug: "",
     });
@@ -45,7 +47,7 @@ export default function BlogEditor({ content: initialContent, formData: initialF
 
     useEffect(() => {
         if (!initialized && initialFormData) {
-            console.log(initialFormData);
+            // console.log(initialFormData);
             
             setImageName(<p className="text-gray-400">Change cover photo</p>);
             setFormData(initialFormData);
@@ -81,7 +83,7 @@ export default function BlogEditor({ content: initialContent, formData: initialF
         e.preventDefault();
         
         if (!formData.title.trim()) return toast.error("Title is required");
-        // if (!categories.includes(formData.selectedCategory)) return toast.error("Select valid category");
+        // if (!categories.includes(formData.selectedTopics)) return toast.error("Select valid topics");
         if (!formData.tags.trim()) return toast.error("At least one tag required");
         if (!content) return toast.error("Blog body should not be empty");
         
@@ -89,7 +91,7 @@ export default function BlogEditor({ content: initialContent, formData: initialF
             title: formData.title,
             htmlContent: content,
             coverImage: formData.base64Img,
-            category: formData.selectedCategory,
+            category: formData.selectedTopics,
             tags: formData.tags,
             slug: formData.slug,
         };
@@ -160,25 +162,25 @@ export default function BlogEditor({ content: initialContent, formData: initialF
                     </div>
                     </label>
                 </div>
-                {/* Category */}
+                {/* Topics */}
                 <div className="sm:col-span-2">
                     <label
                     htmlFor="description"
                     className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                     >
-                    Select Category
+                        Select Topic to submit under
                     </label>
                     <select
                         id="description"
-                        onChange={(e) => setFormData({ ...formData, selectedCategory: e.target.value })}
-                        value={formData.selectedCategory}
+                        onChange={(e) => setFormData({ ...formData, selectedTopics: e.target.value })}
+                        value={formData.selectedTopics}
                         className={`select ${"block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400  sm:text-sm sm:leading-6"}`}
                         placeholder="Write your thoughts here..."
                     >
-                        <option disabled>Select Category</option>
-                        {categories.map((category) => { 
-                            return <option key={category._id} value={category.category}>
-                                {category.category}
+                        <option disabled>Select Topics</option>
+                        {categories.map((topics) => { 
+                            return <option key={topics._id} value={topics._id}>
+                                {topics.name}
                             </option>})}
                     </select>
                 </div>
@@ -264,9 +266,9 @@ export default function BlogEditor({ content: initialContent, formData: initialF
                 {/* Description */}
                 <div className="sm:col-span-2">
                     <h2 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        Story Category
+                        Story Topics
                     </h2>
-                    <p>{formData.selectedCategory}</p>
+                    <p>{formData.selectedTopics}</p>
                 </div>
                 <div className="sm:col-span-full">
                     <h2 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">

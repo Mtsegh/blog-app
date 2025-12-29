@@ -24,7 +24,7 @@ function Navbar() {
     return (
       <Link
         to={`/${link}`}
-        className="[font-size:1em] text-gray-700 hover:text-gray-950 my-2 mx-1 px-2 justify-center"
+        className="text-[1em] text-gray-700 hover:text-gray-950 my-2 mx-1 px-2 justify-center"
       >
         {name}
       </Link>
@@ -33,7 +33,7 @@ function Navbar() {
 
   return (
     <header className="relative border-b border-base-300 w-full top-0 z-50 backdrop-blur-lg">
-      <div className="px-5 bg-amber-300 h-18 m-0 w-full">
+      <div className="px-5 bg-amber-100 h-18 m-0 w-full">
         <div className="flex flex-1 items-center justify-between gap-1 h-full">
           {/* Logo */}
           <Link
@@ -48,7 +48,7 @@ function Navbar() {
 
           {/* Desktop Nav */}
           <div
-            className="md:flex hidden overflow-x-auto text-center whitespace-nowrap text-nowrap [mask-image:linear-gradient(to_right,transparent,_black_10%,_black_90%,_transparent)] lg:[mask-image:none] px-2">
+            className="md:flex hidden overflow-x-auto text-center whitespace-nowrap text-nowrap mask-[linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] lg:mask-none px-2">
             <FastNavLinkTag link={"home"} name={"Home"} />
             <FastNavLinkTag link={"stories/top-stories"} name={"Top Stories"} />
             <FastNavLinkTag link={"stories/latest-stories"} name={"Latest Stories"} />
@@ -61,7 +61,7 @@ function Navbar() {
           <div className="flex right-5 items-center gap-2">
             <Link
               to={"/search"}
-              className="btn bg-transparent border-none gap-1.5 size-9 p-0 h-9 sm:w-fit sm:px-2 sm:rounded-xl rounded-full transition-colors pt-1"
+              className="btn bg-yellow-200/10 border-none gap-1.5 size-9 p-0 h-9 sm:w-fit sm:px-2 sm:rounded-xl rounded-full transition-colors pt-1"
             >
               <Search className="size-6" />
               <span className="hidden sm:inline">Search</span>
@@ -81,11 +81,11 @@ function Navbar() {
                 {/* Dropdown */}
                 {menuOpen && (
                   <div className="absolute right-0 mt-2 w-60 bg-white shadow-[0_0_15px_5px_rgba(0,0,0,0.1)] rounded-xl py-3 animate-fadeIn z-50">
-                    <p className="px-3 font-semibold">{authUser?.fullname}</p>
+                    <p className="px-3 font-semibold">{authUser.fullname}</p>
                     <p className="px-3 text-sm text-gray-500 mb-2">{authUser?.email}</p>
 
                     <Link
-                      to="/profile"
+                      to={`/profile/${authUser?.userSlug}`}
                       className="mx-3 block text-center border rounded-lg py-1.5 mt-2 hover:bg-gray-100 mb-4"
                     >
                       View Profile
@@ -129,12 +129,12 @@ function Navbar() {
 
       <div
         className="flex px-3 md:hidden sm:justify-center overflow-x-auto text-center border-t border-base-300 whitespace-nowrap text-nowrap [mask-image:linear-gradient(to_right,transparent,_black_10%,_black_90%,_transparent)]">
-        <FastNavLinkTag link="" name={"Home"} />
-        <FastNavLinkTag link="" name={"Top Stories"} />
-        <FastNavLinkTag link="" name={"Latest Stories"} />
-        <FastNavLinkTag link="" name={"Categories"} />
-        <FastNavLinkTag link="" name={"Resources"} />
-        <FastNavLinkTag link="" name={"Authors"} />
+        <FastNavLinkTag link={""} name={"Home"} />
+        <FastNavLinkTag link={"stories/top-stories"} name={"Top Stories"} />
+        <FastNavLinkTag link={"stories/latest-stories"} name={"Latest Stories"} />
+        <FastNavLinkTag link={"topics"} name={"Categories"} />
+        <FastNavLinkTag link={"resources"} name={"Resources"} />
+        <FastNavLinkTag link={"authors"} name={"Authors"} />
         <FastNavLinkTag link={"settings"} name={"Settings"} />
       </div>
     </header>

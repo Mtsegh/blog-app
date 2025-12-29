@@ -8,12 +8,12 @@ const subscriptionSchema = new mongoose.Schema({
   },
   subscribeType: {
     type: String,
-    enum: ["User", "Category"],
+    enum: ["User", "Topics"],
     required: true,
   },
   subscribeTo: {
     type: mongoose.Schema.Types.ObjectId,
-    refPath: "subscribeType", // can reference User or Category dynamically
+    refPath: "subscribeType", // can reference User or Topics dynamically
     required: true,
   },
   createdAt: {

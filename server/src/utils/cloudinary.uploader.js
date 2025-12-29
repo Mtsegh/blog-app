@@ -1,24 +1,44 @@
 import cloudinary from "../lib/cloudinary.js";
 
-const uploadToCloudinary = async (blogPics) => {
-    try {
-        if (!blogPics || blogPics.length === 0) {
-            throw new Error("No image provided")
-        }
+export const uploadToCloudinary = async (
+  images,
+  { folder = "blogs/content", publicIdPrefix = "" } = {}
+) => {
+  if (!images || images.length === 0) {
+    throw new Error("No images provided");
+  }
 
-        const uploadPromise = blogPics.map(async (image) => {
-            const result = await cloudinary.uploader.upload(image, { folder: "blog_images"});
-            return result.secure_url;
-        })
+  try {
+    const uploads = images.map((image, index) =>
+      cloudinary.uploader.upload(image, {
+        folder,
+        public_id: publicIdPrefix
+          ? `${publicIdPrefix}_${index}`
+          : undefined,
+        overwrite: true,
+        resource_type: "image",
+      })
+    );
 
-        const urls = await Promise.all(uploadPromise);
+    const results = await Promise.all(uploads);
 
-        return urls
-    } catch (error) {
-        console.log("Error in update saveBlogPics controller: ", error);
-        throw new Error("Cloudinary uplaod failed: ", error.messae);
-        
-    }
-}
+    return results.map((file) => (
+      file.secure_url
+      // publicId: file.public_id,
+    ));
+  } catch (error) {
+    console.error("Cloudinary upload failed:", error.message);
+    throw new Error("Cloudinary upload failed");
+  }
+};
 
-export default uploadToCloudinary;
+export const deleteImagesFromCloudinary = async (publicIds = []) => {
+  if (!publicIds.length) return;
+
+  try {
+    await cloudinary.api.delete_resources(publicIds);
+  } catch (error) {
+    console.error("Cloudinary delete failed:", error.message);
+    throw new Error("Cloudinary delete failed");
+  }
+};

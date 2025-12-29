@@ -13,13 +13,15 @@ const useAuthStore = create((set, get) =>({
     isCheckingAuth: true,
     isSavingChange: false,
     isLoading: false,
+    authorInfo: null,
 
     checkAuth: async () => {
         try {
             const res = await axiosInstance.get("/auth/check");
             set({ authUser: res.data });
+            // console.log("Fetched user profile:", res.data);
         } catch (error) {
-            console.log("Error in checkAuth: ", error);
+            // console.log("Error in checkAuth: ", error);
             set({authUser: null})
         } finally {
             set({ isCheckingAuth: false })
@@ -32,10 +34,10 @@ const useAuthStore = create((set, get) =>({
         try {
             const res = await axiosInstance.post("/auth/signup", data);
             set({ authUser: res.data })
-            console.log(res.data);
+            // console.log(res.data);
             toast.success("Account created successfully");
         } catch (error) {
-            console.log(error.message);
+            // console.log(error.message);
             toast.error(error.response.data.message)
         } finally {
             set({ isSigningUp: false })
@@ -50,7 +52,7 @@ const useAuthStore = create((set, get) =>({
             set({ authUser: res.data })
             toast.success(res.data.message);
         } catch (error) {
-            console.log(error.response.data);
+            // console.log(error.response.data);
             
             toast.error(error.response.data.message)
         } finally {
@@ -84,6 +86,18 @@ const useAuthStore = create((set, get) =>({
         }
     },
 
+    getAuthorProfile: async (userSlug) => {
+        set({ isLoading: true })
+        try {
+            const res = await axiosInstance.get(`/auth/authors/${userSlug}`);
+            set({ authorInfo: res.data });
+        } catch (error) {
+            toast.error(error.response.data.message);
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
     sendResetLink: async (data) => {
         set({ isLoading: true })
         try {
@@ -99,7 +113,7 @@ const useAuthStore = create((set, get) =>({
 
     verifyEmail: async (data) => {
         set({ isLoading: true })
-        console.log(data, get().authUser.email);
+        // console.log(data, get().authUser.email);
         const info = {...data, email: get().authUser.email};
         try {
             const res = await axiosInstance.post("/auth/verify", info);

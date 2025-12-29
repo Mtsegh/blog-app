@@ -3,33 +3,18 @@ import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 
 const useBlogStore = create((set, get) => ({
-    categories: [],
     blogs: [],
     searchState: {
         isSearching: false,
         results: [],
         skip: 0,
     },
-    isGettingCategories: false,
     isSavingBlog: false,
     isLoadingBlogs: false,
     isLoadingBlog: false,
     blogData: null,
     skip: 0,
     loading: false,
-
-    getCategories: async () => {
-        set({ isGettingCategories: false })
-        try {
-            const res = await axiosInstance.get("/blogs/all-categories");
-            set({ categories: res.data });
-        } catch (error) {
-            console.log("Error in getCategories: ", error);
-            set({ categories: null })
-        } finally {
-            set({ isGettingCategories: false })
-        }
-    },
 
     createBlog: async (data) => {        
         set({ isSavingBlog: true });
@@ -39,7 +24,7 @@ const useBlogStore = create((set, get) => ({
             toast.success("Blog saved successfully");
             return res.data;
         } catch (error) {
-            console.log(error.message);
+            // console.log(error.message);
             toast.error(error.response.data.message)
         } finally {
             set({ isSavingBlog: false })
@@ -53,7 +38,7 @@ const useBlogStore = create((set, get) => ({
             toast.success("Blog updated successfully");
             return res.data;
         } catch (error) {
-            console.log(error.message);
+            // console.log(error.message);
             toast.error(error.response.data.message)
         } finally {
             set({ isSavingBlog: false })
@@ -67,7 +52,7 @@ const useBlogStore = create((set, get) => ({
             set({ blogData: res.data })
             // toast.success("Blog saved successfully");
         } catch (error) {
-            console.log(error.message);
+            // console.log(error.message);
             toast.error(error.response.data.message)
         } finally {
             set({ isLoadingBlog: false })
@@ -82,7 +67,7 @@ const useBlogStore = create((set, get) => ({
             set({ blogs:  [...blogs, ...res.data.blogs], skip: Number(res.data.skip) + 10 })
             // toast.success("Blog saved successfully");
         } catch (error) {
-            console.log(error.message);
+            // console.log(error.message);
             toast.error(error.response.data.message);
         } finally {
             set({ isLoadingBlogs: false });
@@ -91,19 +76,20 @@ const useBlogStore = create((set, get) => ({
     },
 
     getBlogs: async (param, useSkip) => {  
-        const { skip, blogs } = get()
+        const { skip, blogs, resetBlogStore } = get()
         set({ isLoadingBlogs: true });
+        if (!useSkip) resetBlogStore();
         try {
             const res = await axiosInstance.get(`/blogs/get-blogs?skip=${useSkip ? skip : 0}&${param}`);
             if (useSkip) {
                 set({ blogs:  [...blogs, ...res.data.blogs], skip: Number(res.data.skip) + 10 })
             } else {
-                set({ blogs: res.data.blogs, skip: Number(res.data.skip) + 10 })
+                set({ blogs: res.data.blogs, skip: Number(res.data.skip) + 10 });
             }
             // toast.success("Blog saved successfully");
         } catch (error) {
-            console.log(error.message);
-            toast.error(error.response.data.message);
+            // console.log(error.message);
+            // toast.error(error.response.data.message);
         } finally {
             set({ isLoadingBlogs: false });
         }
@@ -133,14 +119,14 @@ const useBlogStore = create((set, get) => ({
                 searchState: {
                     ...state.searchState,
                     results:
-                    state.searchState.skip === 0
+                    state.searchState.skip < 10
                         ? res.data.blogs
                         : [...state.searchState.results, ...res.data.blogs],
                     skip: res.data.skip + res.data.limit,
                     isSearching: false,
                 },
             }));
-            console.log("Search response:", res.data, searchState);
+            // console.log("Search response:", res.data, searchState);
         } catch (error) {
             console.error("Search error:", error.message);
 
@@ -162,7 +148,7 @@ const useBlogStore = create((set, get) => ({
             set({ blogData: res.data.blog });
             toast.success(res.data.message);
         } catch (error) {
-            console.log(error.message);
+            // console.log(error.message);
             toast.error(error.response.data.message);
         } finally {
             set({ loading: false });
@@ -176,7 +162,7 @@ const useBlogStore = create((set, get) => ({
             const res = await axiosInstance.get(`/blogs/delete-blog/${slug}`);
             toast.success(res.data.message);
         } catch (error) {
-            console.log(error.message);
+            // console.log(error.message);
             toast.error(error.response.data.message);
         } finally {
             set({ loading: false });
@@ -185,17 +171,23 @@ const useBlogStore = create((set, get) => ({
     },
 
     likeBlog: async (slug) => {
-        const likedPosts = JSON.parse(
+        const initialLikedPosts = JSON.parse(
             localStorage.getItem("likedPosts") || "{}"
         );
 
-        const currentLikes = likedPosts[slug] || 0;
+        const likedPosts = (Array.isArray(initialLikedPosts) || typeof initialLikedPosts !== "object") ? {} : initialLikedPosts;
+        
+        const currentLikes = likedPosts[slug] ?? 0;
 
         if (currentLikes >= 100) return; // 🚫 max reached
 
         // optimistic update
         likedPosts[slug] = currentLikes + 1;
         localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
+        const posts = JSON.parse(
+            localStorage.getItem("likedPosts") || "{}"
+        );
+        
 
         try {
             await axiosInstance.patch(`/blogs/${slug}/like`);
@@ -211,6 +203,7 @@ const useBlogStore = create((set, get) => ({
         const likedPosts = JSON.parse(
             localStorage.getItem("likedPosts") || "{}"
         );
+        // console.log("Liked Posts from localStorage: ", likedPosts);
         return likedPosts[slug] || 0;
     },
 

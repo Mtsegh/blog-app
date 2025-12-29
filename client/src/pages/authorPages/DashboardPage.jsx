@@ -48,7 +48,7 @@ function DashboardPage() {
           {isLoadingBlogs ? <Loader2 /> :
             ( (!blogs || blogs.length === 0) ?
               <div className="text-center p-6">
-                You have no {}
+                You have no {activeBtn.drafts ? 'drafts' : activeBtn.published ? 'published blogs' : 'pending blogs'} yet.
               </div> :
               blogs.map((blog) => (
               <div className="flex border-b last:border-none border-gray-300 py-6" key={blog._id}>

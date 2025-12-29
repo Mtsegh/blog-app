@@ -10,7 +10,7 @@ export default function LoginPage() {
 
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
-        usernameOrEmail: "",
+        userSlugOrEmail: "",
         password: "",
     });
 
@@ -25,7 +25,7 @@ export default function LoginPage() {
     };
 
     const validateForm = () => {
-        if (!formData.usernameOrEmail.trim()) return toast.error("Username is required");
+        if (!formData.userSlugOrEmail.trim()) return toast.error("Email is required");
         if (!formData.password) return toast.error("Password is required");
 
         return true;
@@ -58,12 +58,12 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <InputField
-                    label={"usernameOrEmail"}
+                    label={"userSlugOrEmail"}
                     Icon={User}
                     type={"text"}
                     placeholder={"paulapaul@gmail.com"}
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, usernameOrEmail: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, userSlugOrEmail: e.target.value })}
                 />
                 <InputField
                     label={"Password"}

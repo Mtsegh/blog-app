@@ -1,6 +1,6 @@
 export function formatPrettyDate(dateString) {
   const date = new Date(dateString);
-
+  
   const day = date.getDate();
   const year = date.getFullYear();
 

@@ -11,7 +11,6 @@ export default function SignUpPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         fullname: "",
-        username: "",
         email: "",
         password: "",
         confirmPassword: "",
@@ -30,7 +29,6 @@ export default function SignUpPage() {
     const validateForm = () => {
         if (!formData.fullname.trim()) return toast.error("Full name is required");
         if (!formData.email.trim()) return toast.error("Email is required");
-        if (!formData.username.trim()) return toast.error("Username is required");
         if (!/\S+@\S+\.\S+/.test(formData.email)) return toast.error("Invalid email format");
         if (!formData.password) return toast.error("Password is required");
         if (formData.password.length < 6) return toast.error("Password must be at least 6 characters");
@@ -72,14 +70,6 @@ export default function SignUpPage() {
                     placeholder={"Paula Paul"}
                     value={formData.fullname}
                     onChange={(e) => setFormData({ ...formData, fullname: e.target.value })}
-                />
-                <InputField
-                    label={"Username"}
-                    Icon={User}
-                    type={"text"}
-                    placeholder={"@paulapaul"}
-                    value={"@"+formData.username}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value.slice(1) })}
                 />
                 <InputField
                     label={"Email"}
