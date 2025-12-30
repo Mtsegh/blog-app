@@ -27,7 +27,7 @@ export const protect = async (req, res, next) => {
         next()
 
     } catch (error) {
-        // console.log("Error in protect middleware", error.message);
+        console.log("Error in protect middleware", error.message);
         res.status(500).json({ message: "Internal Server Error" });
     }
 }
@@ -35,7 +35,7 @@ export const protect = async (req, res, next) => {
 export const optionalAuth = async (req, res, next) => {
     const token = req.cookies.jwt
     if (!token) {
-        // console.log("No token provided, continuing as guest");
+        console.log("No token provided, continuing as guest");
         return next(); // no token — continue as a visitor
     }
 

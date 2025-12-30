@@ -27,7 +27,7 @@ export const getAllBlogs = async (req, res) => {
 
         res.status(200).json({ count: blogs.length, skip, limit, blogs, });
     } catch (error) {
-        // console.log("Error in getAllBlogs controller: ", error.message);
+        console.log("Error in getAllBlogs controller: ", error.message);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
@@ -104,7 +104,6 @@ export const getBlogs = async (req, res) => {
         }
 
         res.status(200).json({ count: blogs.length, skip, limit, blogs });
-        // console.log("count: ", blogs.length, skip, limit, filter);
         
     } catch (error) {
         console.error("Error in getBlogs controller:", error.message);
@@ -156,7 +155,7 @@ export const createBlog = async (req, res) => {
             res.status(400).json({ message: "invalid blog data" })
         }
     } catch (error) {
-        // console.log("Error in createBlog controller: ", error);
+        console.log("Error in createBlog controller: ", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
@@ -193,7 +192,7 @@ export const editBlog = async (req, res) => {
             res.status(400).json({ message: "invalid blog data" })
         }
     } catch (error) {
-        // console.log("Error in editBlog controller: ", error.message);
+        console.log("Error in editBlog controller: ", error.message);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };

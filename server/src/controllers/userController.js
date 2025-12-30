@@ -77,7 +77,7 @@ export const signup = async (req, res) => {
             res.status(400).json({ message: "invalid user data" })
         }
     } catch (error) {
-        // console.log("Error in signup controller: ", error.message);
+        console.log("Error in signup controller: ", error.message);
         res.status(500).json({ message: "Internal Server Error" })
     }
 }
@@ -124,7 +124,7 @@ export const login = async (req, res) => {
             message: "Logged in successfully",
         });
     } catch (error) {
-        // console.log("Error in login controller: ", error.message);
+        console.log("Error in login controller: ", error.message);
         res.status(500).json({ message: "Internal Server Error" })
     };
 };
@@ -133,7 +133,7 @@ export const verifyEmail = async (req, res) => {
     try {
         const { token, email } = req.body; // if sent as ?token=...
         if (!token) return res.status(400).json({ message: "Missing token" });
-        // console.log(req.body);
+        console.log(req.body);
         
         const user = await User.findOne({
             email: email,
@@ -152,7 +152,7 @@ export const verifyEmail = async (req, res) => {
 
         res.status(200).json({ message: "Email verified successfully!", data: user });
     } catch (err) {
-        // console.log("Error in verifyEmail controller: ", err.message);
+        console.log("Error in verifyEmail controller: ", err.message);
         res.status(500).json({ message: "Internal server error" });
     }
 };
@@ -167,7 +167,7 @@ export const checkAuth = async (req, res) => {
 
         res.status(200).json(req.user);
     } catch (error) {
-        // console.log("Error in checkAuth controller: ", error.message);
+        console.log("Error in checkAuth controller: ", error.message);
         res.status(500).json({ message: "Internal Server Error" })
     }
 }
@@ -177,7 +177,7 @@ export const logout = async (req, res) => {
         res.cookie("jwt", "", { maxAge: 0 })
         res.status(200).json({ message: "Logged Out Successfully" })
     } catch (error) {
-        // console.log("Error in signup controller: ", error.message);
+        console.log("Error in signup controller: ", error.message);
         res.status(500).json({ message: "Internal Server Error" })
     }
 }
@@ -224,7 +224,7 @@ export const updateProfile = async (req, res) => {
 
         res.status(200).json(updatedUser);
     } catch (error) {
-        // console.log("Error in update profile controller:", error);
+        console.log("Error in update profile controller:", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
@@ -277,7 +277,7 @@ export const resendVerificationEmail = async (req, res) => {
         profileImage: user.profileImage,
        });
   } catch (error) {
-        // console.log("Error in update resendAuthEmail controller: ", error.message);
+        console.log("Error in update resendAuthEmail controller: ", error.message);
         res.status(500).json({ message: "Internal Server Error" })
     }
 };
@@ -290,7 +290,7 @@ export const deleteUsers = async (req, res) => {
       .status(200)
       .json({ message: "Deleted successfully", deleted });
   } catch (error) {
-        // console.log("Error in update resendAuthEmail controller: ", error.message);
+        console.log("Error in update resendAuthEmail controller: ", error.message);
         res.status(500).json({ message: "Internal Server Error" })
     }
 };
@@ -313,10 +313,10 @@ export const forgotPassword = async (req, res) => {
 
 		// send email
 		await sendPasswordResetEmail(user.email, user.fullname, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
-        // console.log("Password reset email sent to ", user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
+        console.log("Password reset email sent to ", user.email, `${process.env.CLIENT_URL}/reset-password/${resetToken}`);
 		res.status(200).json({ message: "Password reset link sent to your email" });
 	} catch (error) {
-		// console.log("Error in forgotPassword ", error);
+		console.log("Error in forgotPassword ", error);
 		res.status(400).json({ success: false, message: error.message });
 	}
 };
@@ -348,7 +348,7 @@ export const resetPassword = async (req, res) => {
 
 		res.status(200).json({ success: true, message: "Password reset successful" });
 	} catch (error) {
-		// console.log("Error in resetPassword ", error);
+		console.log("Error in resetPassword ", error);
 		res.status(400).json({ message: error.message });
 	}
 };
