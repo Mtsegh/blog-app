@@ -7,6 +7,9 @@ import authRoutes from "./routes/authRoutes.js"
 import subscribeRoutes from "./routes/subscribeRoute.js"
 import connectDB from "./lib/connectDB.js";
 
+
+import path from "path";
+
 dotenv.config()
 const app = express()
 
@@ -23,6 +26,14 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/subscribe", subscribeRoutes);
 app.use("/api/blogs", blogRoutes);
+
+if (process.env.NODE_ENV === "production") {
+    app.use(express.static(path.join(__dirname, "../client/dist")));
+    app.get("*", (req, res) => {
+        res.sendFile(path.resolve(__dirname, "../client", "dist", "index.html"));
+    });
+}
+
 const PORT = 5000 || process.env.PORT
 
 app.listen(PORT, () => {
