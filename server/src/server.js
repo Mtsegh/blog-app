@@ -37,6 +37,6 @@ if (process.env.NODE_ENV === "production") {
 const PORT = 5000 || process.env.PORT
 
 app.listen(PORT, () => {
-    // console.log("Server running on port: " + PORT);
+    console.log("Server running on port: " + PORT);
     connectDB();
 })

@@ -7,9 +7,9 @@ const connectDB = async () => {
             retryWrites: true,
             w: "majority",
         });
-        // console.log(`MongoDB connected: ${connected.connection.host}`);
+        console.log(`MongoDB connected: ${connected.connection.host}`);
     } catch (error) {
-        // console.log("MongoDB connection error: ", error); 
+        console.log("MongoDB connection error: ", error); 
     }
 }
 
