@@ -34,7 +34,7 @@
 // https://github.com/sendgrid/sendgrid-nodejs
 import sgMail from '@sendgrid/mail'
 
-sgMail.setApiKey('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')
+sgMail.setApiKey('')
 // sgMail.setDataResidency('eu'); 
 // uncomment the above line if you are sending mail using a regional EU subuser
 
