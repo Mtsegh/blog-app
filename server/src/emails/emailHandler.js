@@ -1,76 +1,59 @@
-import { resendClient, sender } from "../lib/resend.js"
-import { createResetPasswordTemplate, createUserVerificationTemplate } from "./emailTemlate.js"
-
+import { mailTransporter, sender } from "../lib/mailer.js";
+import {
+  createResetPasswordTemplate,
+  createUserVerificationTemplate,
+  createEmailTemplate
+} from "./emailTemlate.js";
 
 export const sendAuthEmail = async (email, name, clientURL) => {
-    console.log(typeof email, email);
-    
-    const { data, error } = await resendClient.emails.send({
-        from: `${sender.name} <${sender.email}>`,
-        to: email,
-        subject: "Verify Your Email",
-        html: createUserVerificationTemplate(name, clientURL),
+  try {
+    await mailTransporter.sendMail({
+      from: `"${sender.name}" <${sender.email}>`,
+      to: email,
+      subject: "Verify your email",
+      html: createUserVerificationTemplate(name, clientURL),
+      replyTo: sender.email,
     });
-    console.log(clientURL);
-    
-    if (error) {
-        console.error("Error sending email: ", error.message);
-        throw new Error("Failed to send welcome email");
-    }
 
-    console.log("Welcome Email sent successfully", data);
+    console.log("✅ Verification email sent:", email);
+  } catch (error) {
+    console.error("❌ Auth email error:", error.message);
+    throw new Error("Failed to send verification email");
+  }
 };
 
 export const sendPasswordResetEmail = async (email, name, clientURL) => {
-    console.log(typeof email, email);
-    
-    const { data, error } = await resendClient.emails.send({
-        from: `${sender.name} <${sender.email}>`,
-        to: email,
-        subject: "Reset Password Request",
-        html: createResetPasswordTemplate(name, clientURL),
+  try {
+    await mailTransporter.sendMail({
+      from: `"${sender.name}" <${sender.email}>`,
+      to: email,
+      subject: "Reset your password",
+      html: createResetPasswordTemplate(name, clientURL),
+      replyTo: sender.email,
     });
-    console.log(clientURL);
-    
-    if (error) {
-        console.error("Error sending email: ", error.message);
-        throw new Error("Failed to send welcome email");
-    }
 
-    console.log("Welcome Email sent successfully", data);
+    // console.log("✅ Password reset email sent:", email);
+  } catch (error) {
+    console.error("❌ Reset email error:", error.message);
+    throw new Error("Failed to send reset email");
+  }
 };
 
-export const sendEmailsToSubscribers = async (emails, blogCatch) => {
-    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+export const sendEmailsToSubscribers = async (emails, blog) => {
+  for (const email of emails) {
+    try {
+      await mailTransporter.sendMail({
+        from: `"${sender.name}" <${sender.email}>`,
+        to: email,
+        subject: `New blog post: ${blog.title}`,
+        html: createEmailTemplate(blog),
+        replyTo: sender.email,
+      });
 
-    const sendPromises = emails.map(async (email, index) => {
-        await delay(index * 500); // stagger each send
-
-        try {
-            const { data, error } = await resendClient.emails.send({
-                from: `${sender.name} <${sender.email}>`,
-                to: email,
-                subject: `📰 New blog from your subscription: ${blog.title}`,
-                html: createEmailTemplate(clientURL, blogCatch),
-            });
-
-            if (error) {
-                console.error(`Error sending to ${email}:`, error);
-                return { email, status: "failed", error: error.message };
-            }
-
-            console.log(`✅ Sent to ${email}`);
-            return { email, status: "sent", data };
-        } catch (err) {
-            console.error(`❌ Exception sending to ${email}:`, err.message);
-            return { email, status: "failed", error: err.message };
-        }
-    });
-
-    // Wait for all to complete, regardless of individual success/failure
-    const results = await Promise.all(sendPromises);
-
-    console.log("📬 Email sending complete:", results);
-    console.log(results);
-    
+      console.log(`✅ Sent to ${email}`);
+      await new Promise(r => setTimeout(r, 800)); // throttle
+    } catch (err) {
+      console.error(`❌ Failed for ${email}:`, err.message);
+    }
+  }
 };
