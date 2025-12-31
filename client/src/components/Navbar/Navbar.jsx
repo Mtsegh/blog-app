@@ -81,7 +81,7 @@ function Navbar() {
                 {/* Dropdown */}
                 {menuOpen && (
                   <div className="absolute right-0 mt-2 w-60 bg-white shadow-[0_0_15px_5px_rgba(0,0,0,0.1)] rounded-xl py-3 animate-fadeIn z-50">
-                    <p className="px-3 font-semibold">{authUser.fullname}</p>
+                    <p className="px-3 font-semibold capitalize">{authUser.fullname}</p>
                     <p className="px-3 text-sm text-gray-500 mb-2">{authUser?.email}</p>
 
                     <Link

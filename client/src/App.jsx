@@ -17,7 +17,6 @@ const ProtectedRoute = ({ children }) => {
 	}
 	// console.log(authUser.isVerified);
 	if (!authUser.isVerified) {
-		// console.log("redirecting!!!!!!!");
 		return <Navigate to='/verify-email' replace />;
 	}
 
@@ -28,15 +27,13 @@ const ProtectedRoute = ({ children }) => {
 const RedirectAuthenticatedUser = ({ children }) => {
 	const { authUser } = useAuthStore();
 
-	if (authUser) {
-		if (authUser.isVerified) {
-			return <Navigate to='/dashboard' replace />;
-		} else if (!authUser.isVerified) {
-			return <Navigate to='/verify-email' replace />;
-		}
-	}
-	// console.log("not redirecting!!!!!!!");
-	return children;
+	if (!authUser) return children;
+
+	// if (!authUser.isVerified) {
+	// 	return <Navigate to="/verify-email" replace />;
+	// }
+
+	return <Navigate to="/dashboard" replace />;
 };
 
 
@@ -153,9 +150,7 @@ export default function App() {
 				/>
 				<Route path='/verify-email'
 					element={
-						<RedirectAuthenticatedUser>
-							<EmailVerificationPage />
-						</RedirectAuthenticatedUser>
+						<EmailVerificationPage />
 					}
 				/>
 				<Route

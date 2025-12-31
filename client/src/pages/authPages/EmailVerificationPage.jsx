@@ -7,6 +7,7 @@ import useAuthStore from '../../store/useAuthStore';
 import toast from "react-hot-toast";
 
 export default function EmailVerificationPage() {
+    
     const [formData, setFormData] = useState({
         token: "",
     });
@@ -30,7 +31,6 @@ export default function EmailVerificationPage() {
     return (
         <div className="grid lg:grid-cols-2">
             {/* right side */}
-
             <AuthImagePattern
                 title="Join our community"
                 subtitle="Connect with friends, share moments, and stay in touch with your loved ones."

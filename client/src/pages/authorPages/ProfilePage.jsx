@@ -54,7 +54,7 @@ export default function ProfilePage() {
         </div>
       </div>
       <div className="flex flex-col px-4 my-0 py-4">
-        <h3 className="font-semibold text-4xl mb-4">{authorInfo?.fullname}</h3>
+        <h3 className="font-semibold text-4xl mb-4 capitalize">{authorInfo?.fullname}</h3>
         <div className="flex">
           <div className="flex gap-2 flex-wrap">
             <li className="flex list-none">
