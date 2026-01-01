@@ -43,7 +43,7 @@ export default function EditProfilePage() {
 
     const success = await updateProfile(updates);
     if (success) {
-      navigate(`/profile`);
+      navigate(`/profile/${authUser.userSlug}`);
     }
   };
 
