@@ -245,7 +245,7 @@ export default function BlogPage() {
             </button>
           </>
         )}
-        <button onClick={Share} className="flex flex-col items-center">
+        <button onClick={share} className="flex flex-col items-center">
           <Share2 className="size-6 text-gray-500 dark:text-gray-100" />
           <span className="text-xs text-gray-500 dark:text-gray-100">Share</span>
         </button>
