@@ -182,7 +182,7 @@ export default function BlogPage() {
 
         {/* Bottom Like for mobile */}
       </div>
-      <div className="md:hidden bottom-0 fixed bg-white flex gap-6 justify-around mt-10 w-full h-16 items-center p-2 border-t border-gray-300">
+      <div className="md:hidden bottom-0 fixed bg-white dark:bg-gray-800 flex gap-6 justify-around mt-10 w-full h-16 items-center p-2 border-t border-gray-300">
         <button onClick={handleLike} className="flex gap-1 items-center">
           <div className="relative">
             <HeartBurst burstKey={burstKey} />
@@ -194,7 +194,7 @@ export default function BlogPage() {
               }`}
             />
           </div>
-          <span className="text-md text-gray-600">{likesCount}</span>
+          <span className="text-md text-gray-600 dark:text-gray-200">{likesCount}</span>
         </button>
         {isAuthor && (
           <>
@@ -227,8 +227,8 @@ export default function BlogPage() {
           </>
         )}
         <button className="flex flex-col items-center">
-          <Share2 className="size-6 text-gray-500" />
-          <span className="text-xs text-gray-500">Share</span>
+          <Share2 className="size-6 text-gray-500 dark:text-gray-100" />
+          <span className="text-xs text-gray-500 dark:text-gray-100">Share</span>
         </button>
       </div>
     </div>

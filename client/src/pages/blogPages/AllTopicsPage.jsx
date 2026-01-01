@@ -26,7 +26,7 @@ function AllTopicsPage() {
         <div className='flex justify-end'>
           <Link
             to="/create-topic"
-            className="self-end inline-flex items-center gap-1 bg-gray-900/10 text-gray-800 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800/16 transition"
+            className="self-end inline-flex items-center gap-1 bg-gray-900/10 dark:bg-gray-600 text-gray-800 dark:text-gray-100 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800/16 transition"
           >
             <span className="text-lg leading-none">+</span>
             Create Topic

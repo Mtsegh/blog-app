@@ -20,7 +20,7 @@ function BlogPreview({ blog, className = "" }) {
     <article
       className={`
         group relative overflow-hidden rounded-xl
-        bg-background/80 backdrop-blur-sm
+        bg-background/70 backdrop-blur-sm
         shadow-sm hover:shadow-xl
         transition-all duration-500
         ${className}
@@ -57,7 +57,7 @@ function BlogPreview({ blog, className = "" }) {
       </div>
 
       {/* Card Content */}
-      <div className="p-4 sm:p-5 space-y-4">
+      <div className="p-4 sm:p-5 space-y-4 dark:text-white">
         {/* Excerpt */}
         {excerpt && (
           <p
@@ -105,7 +105,7 @@ function BlogPreview({ blog, className = "" }) {
         <div className="pt-2 border-t border-border/40">
           <span
             className="
-              text-xs sm:text-sm uppercase tracking-wide
+              text-xs sm:text-sm  tracking-wide
               text-muted-foreground
             "
           >

@@ -40,11 +40,11 @@ if (isLoadingBlog) {
         <BlogEditor
             content={blogData.htmlContent}
             formData={{
-            title: blogData.title,
-            base64Img: blogData.coverImage,
-            selectedTopics: blogData.category.slug,
-            tags: blogData.tags,
-            slug: blogData.slug,
+                title: blogData.title,
+                base64Img: blogData.coverImage,
+                selectedTopics: blogData.category.slug,
+                tags: blogData.tags,
+                slug: blogData.slug,
             }}
         />
     );

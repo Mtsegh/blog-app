@@ -24,7 +24,7 @@ function Navbar() {
     return (
       <Link
         to={`/${link}`}
-        className="text-[1em] text-gray-700 hover:text-gray-950 my-2 mx-1 px-2 justify-center"
+        className="text-[1em] text-gray-700 dark:text-gray-200 hover:text-gray-900 my-2 mx-1 px-2 justify-center"
       >
         {name}
       </Link>
@@ -33,14 +33,14 @@ function Navbar() {
 
   return (
     <header className="relative border-b border-base-300 w-full top-0 z-50 backdrop-blur-lg">
-      <div className="px-5 bg-amber-100 h-18 m-0 w-full">
+      <div id="navbar-dark" className="px-5 bg-amber-200 dark:bg-[#2c270c5b] h-18 m-0 w-full">
         <div className="flex flex-1 items-center justify-between gap-1 h-full">
           {/* Logo */}
           <Link
             to="/"
             className="flex items-center start-0 gap-1.5 hover:opacity-80 transition-all"
           >
-            <div className="flex flex-1 size-12 rounded-xl bg-primary/20 items-center justify-center transition-colors">
+            <div className="flex flex-1 size-12 rounded-xl bg-primary/20 dark:bg-[#f7a03d5b] items-center justify-center transition-colors">
               <img src={pen} className="flex-1 size-12" alt="logo" />
             </div>
             <h2 className="text-lg font-bold flex-1">GettyStories</h2>
@@ -72,7 +72,7 @@ function Navbar() {
                   onClick={() => setMenuOpen(!menuOpen)}
                   className="flex items-center gap-1 cursor-pointer"
                 >
-                  <div className="size-9 rounded-full bg-amber-400 flex items-center justify-center font-semibold">
+                  <div className="size-9 rounded-full bg-amber-400 dark:bg-amber-600 flex items-center justify-center font-semibold">
                     {authUser?.fullname?.slice(0, 2).toUpperCase() || "PA"}
                   </div>
                   {menuOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
@@ -80,9 +80,9 @@ function Navbar() {
 
                 {/* Dropdown */}
                 {menuOpen && (
-                  <div className="absolute right-0 mt-2 w-60 bg-white shadow-[0_0_15px_5px_rgba(0,0,0,0.1)] rounded-xl py-3 animate-fadeIn z-50">
+                  <div className="absolute right-0 mt-2 w-60 bg-white dark:bg-gray-800 shadow-[0_0_15px_5px_rgba(0,0,0,0.1)] rounded-xl py-3 animate-fadeIn z-50">
                     <p className="px-3 font-semibold capitalize">{authUser.fullname}</p>
-                    <p className="px-3 text-sm text-gray-500 mb-2">{authUser?.email}</p>
+                    <p className="px-3 text-sm text-gray-500 mb-2 dark:text-gray-400">{authUser?.email}</p>
 
                     <Link
                       to={`/profile/${authUser?.userSlug}`}
@@ -106,7 +106,7 @@ function Navbar() {
                     <Link className="block py-2 px-3 hover:bg-gray-50 rounded" to="/settings">Settings</Link>
 
                     <button
-                      className="block w-full text-left py-2 px-3 hover:bg-red-50 text-red-600 rounded mt-"
+                      className="block w-full text-left py-2 px-3 hover:bg-red-50 text-red-600 dark:text-red-500 rounded mt-"
                       onClick={logout}
                     >
                       Sign Out
@@ -128,7 +128,7 @@ function Navbar() {
       </div>
 
       <div
-        className="flex px-3 md:hidden sm:justify-center overflow-x-auto text-center border-t border-base-300 whitespace-nowrap text-nowrap [mask-image:linear-gradient(to_right,transparent,_black_10%,_black_90%,_transparent)]">
+        className="flex px-3 md:hidden sm:justify-center overflow-x-auto text-center border-t border-base-300 whitespace-nowrap text-nowrap mask-[linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
         <FastNavLinkTag link={""} name={"Home"} />
         <FastNavLinkTag link={"stories/top-stories"} name={"Top Stories"} />
         <FastNavLinkTag link={"stories/latest-stories"} name={"Latest Stories"} />

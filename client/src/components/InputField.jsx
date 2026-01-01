@@ -9,7 +9,7 @@ export default function InputField({
     return (
         <div className={`form-control ${style}`}>
             <label className="label">
-                <span className="label-text font-medium uppercase text-gray-900">{label}</span>
+                <span className="label-text dark:text-gray-300 font-medium">{label}</span>
             </label>
             <div className="relative">
                 <input

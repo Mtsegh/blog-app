@@ -55,7 +55,6 @@ export default function EditProfilePage() {
     const url = URL.createObjectURL(file);
     setCoverPreview(url);
 
-    setImageName(file.name);
     const reader = new FileReader();
 
     reader.readAsDataURL(file)

@@ -47,7 +47,7 @@ export default function App() {
 	if (isCheckingAuth) return <LoadingSpinner />;
 
 	return (
-		<div className='min-h-dvh'>
+		<div className='min-h-dvh dark:bg-gray-800'>
 			<Routes>
 				<Route element={<MainLayout />}>
 					<Route

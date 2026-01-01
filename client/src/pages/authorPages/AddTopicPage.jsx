@@ -77,7 +77,7 @@ function AddTopic() {
   // ---------- UI ----------
   return (
     <div className="grid grid-cols-1 justify-center">
-      <header className="fixe flex justify-between h-15 items-center border-b bg-amber-300 border-base-300 w-full top-0 z-50 backdrop-blur-lg">
+      <header className="fixed flex justify-between h-15 items-center border-b bg-amber-300 dark:bg-[#130f00] border-base-300 w-full top-0 z-50 backdrop-blur-lg">
         <Link to="/topics" className="flex gap-1.5 px-5 m-0">
           <ChevronLeft />
           <p>Back to topics</p>
@@ -160,15 +160,15 @@ function AddTopic() {
 
           <div className="form-control">
             <label className="label flex justify-between">
-              <span className="label-text font-medium text-gray-800 uppercase">
+              <span className="label-text font-medium text-gray-800 dark:text-gray-200 uppercase">
                 About
               </span>
-              <span className="text-gray-900 text-sm bg-gray-100 p-1 rounded-lg">
+              <span className="text-gray-900 dark:text-gray-200 text-sm dark:bg-gray-900 bg-gray-100 p-1 rounded-lg">
                 Required
               </span>
             </label>
 
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
               Briefly describe what this topic is about.
             </p>
 

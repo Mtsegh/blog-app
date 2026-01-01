@@ -58,11 +58,11 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <InputField
-                    label={"userSlugOrEmail"}
+                    label={"Email"}
                     Icon={User}
                     type={"text"}
                     placeholder={"paulapaul@gmail.com"}
-                    value={formData.email}
+                    value={formData.userSlugOrEmail}
                     onChange={(e) => setFormData({ ...formData, userSlugOrEmail: e.target.value })}
                 />
                 <InputField

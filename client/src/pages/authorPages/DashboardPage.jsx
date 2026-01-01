@@ -24,20 +24,20 @@ function DashboardPage() {
     <div className="flex flex-col size-full top-20 p-4 ">
       <div className='self-center w-full sm:w-150 mb-4'>
         <h1 className="text-xl font-bold my-5">Your Blogs</h1>
-        <div className='flex flex-row gap-10 my-3 border-b border-gray-300 text-gray-500'>
-          <button className={`${activeBtn.drafts && 'border-b text-gray-900'} py-4`}
+        <div className='flex flex-row gap-10 my-3 border-b border-gray-300 text-gray-500 dark:text-gray-400'>
+          <button className={`${activeBtn.drafts && 'border-b text-gray-900 dark:text-gray-100'} py-4`}
             onClick={() => {
               getBlogs(`author=${authUser?._id}&drafts=true`, false)
               setActiveBtn({drafts: true, pending: false, published: false})
             }
             }>Drafts</button>
-          <button className={`${activeBtn.published  && 'border-b text-gray-900'} py-4`}
+          <button className={`${activeBtn.published  && 'border-b text-gray-900 dark:text-gray-100'} py-4`}
             onClick={() => {
               getBlogs(`author=${authUser?._id}`, false)
               setActiveBtn({drafts: false, pending: false, published: true})
             }
             }>Published</button>
-          <button className={`nj ${activeBtn.pending  && 'border-b text-gray-900'} py-4`}
+          <button className={`nj ${activeBtn.pending  && 'border-b text-gray-900 dark:text-gray-100'} py-4`}
             onClick={() => {
               getBlogs(`author=${authUser?._id}&drafts=true`, false)
               setActiveBtn({drafts: false, pending: true, published: false})

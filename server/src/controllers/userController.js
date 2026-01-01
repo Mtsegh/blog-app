@@ -213,7 +213,7 @@ export const updateProfile = async (req, res) => {
 
         if (coverImage) {
             const uploaded = await uploadToCloudinary([coverImage], {folder: 'user/content'});
-            updateFields.coverImage = uploaded.secure_url;
+            updateFields.coverImage = uploaded[0];
         }
         
         const updatedUser = await User.findByIdAndUpdate(

@@ -10,7 +10,7 @@ body {
     position: sticky;
     top: 65px;
     z-index: 40;
-    background: white;
+    color: rgb(12, 11, 18);
     border-radius: 8px 8px 0px 0px;
 }
 
