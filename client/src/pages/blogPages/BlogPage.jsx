@@ -81,6 +81,25 @@ export default function BlogPage() {
     }
   };
 
+  const share = async () => {
+    const shareData = {
+      title: blogData.title,
+      text: blogData.description,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.error("Share cancelled or failed:", err);
+      }
+    } else {
+      // Fallback: copy link
+      await navigator.clipboard.writeText(shareData.url);
+      alert("Link copied to clipboard!");
+    }
+  };
 
 
   return (
@@ -106,7 +125,7 @@ export default function BlogPage() {
         </button>
 
         {/* Share Button */}
-        <button className="flex flex-col items-center group">
+        <button onClick={share} className="flex flex-col items-center group">
           <Share2 className="size-6 text-gray-500 group-hover:text-primary transition" />
           <span className="text-xs text-gray-500">Share</span>
         </button>
@@ -226,7 +245,7 @@ export default function BlogPage() {
             </button>
           </>
         )}
-        <button className="flex flex-col items-center">
+        <button onClick={Share} className="flex flex-col items-center">
           <Share2 className="size-6 text-gray-500 dark:text-gray-100" />
           <span className="text-xs text-gray-500 dark:text-gray-100">Share</span>
         </button>

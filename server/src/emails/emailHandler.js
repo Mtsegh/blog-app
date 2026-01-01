@@ -5,6 +5,11 @@ import {
   createEmailTemplate
 } from "./emailTemlate.js";
 
+import dotenv from "dotenv";
+dotenv.config();
+
+const url = process.env.CLIENT_URL || "http://localhost:3000";
+
 export const sendAuthEmail = async (email, name, clientURL) => {
   try {
     await mailTransporter.sendMail({
@@ -23,12 +28,13 @@ export const sendAuthEmail = async (email, name, clientURL) => {
 };
 
 export const sendPasswordResetEmail = async (email, name, clientURL) => {
+  const resetURL = `${url}/reset-password/${clientURL}`;
   try {
     await mailTransporter.sendMail({
       from: `"${sender.name}" <${sender.email}>`,
       to: email,
       subject: "Reset your password",
-      html: createResetPasswordTemplate(name, clientURL),
+      html: createResetPasswordTemplate(name, resetURL),
       replyTo: sender.email,
     });
 

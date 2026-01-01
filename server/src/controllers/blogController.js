@@ -48,7 +48,9 @@ export const getBlog = async (req, res) => {
                 { author: req.user._id }
             ];
         }
-
+        
+        console.log("Filter:", filter, update);
+        console.log(req.user);
         const blog = await Blog.findOneAndUpdate(
             filter,
             update,
@@ -63,12 +65,10 @@ export const getBlog = async (req, res) => {
 
         res.status(200).json(blog);
     } catch (error) {
-        console.error("Error in getBlog controller:", error.message);
+        console.error("Error in getBlog controller:", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
-
-
 
 export const getBlogs = async (req, res) => {
     try {
@@ -231,7 +231,7 @@ export const likeBlog = async (req, res) => {
     try {
         const { slug } = req.params;
 
-        const blog = await Blog.findOne({ slug });
+        const blog = await Blog.findOne({ slug, published: true });
         if (!blog) return res.status(404).json({ message: "Blog not found" });
 
         // Increment likes count

@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get("/all-blogs", getAllBlogs);
 
-router.get("/blog/:slug", getBlog);
+router.get("/blog/:slug", optionalAuth, getBlog);
 
 router.get("/get-blogs", optionalAuth, getBlogs);
 

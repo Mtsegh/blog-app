@@ -43,7 +43,7 @@ export const optionalAuth = async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        const user = await User.findById(decoded.userId).select("_id name email");
+        const user = await User.findById(decoded.userId).select("-password");
         req.user = user;
     } catch (err) {
         console.warn("Invalid or expired token, continuing as guest", err.message);

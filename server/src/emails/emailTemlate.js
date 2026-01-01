@@ -48,7 +48,7 @@ export function createUserVerificationTemplate(name, clientURL) {
       </div>
 
       <!-- CTA -->
-      <div style="text-align:center; margin:30px 0;">
+      <div style="text-align:center; margin:10px 0;">
         <span style="background: linear-gradient(to right, #36D1DC, #5B86E5); color: white; text-decoration: none; padding: 12px 30px; border-radius: 50px; font-weight: 500; display: inline-block;">${clientURL}</span>
       </div>
 
@@ -163,7 +163,7 @@ export function createEmailTemplate(blog) {
         <h1>${blog.title}</h1>
         <p>by ${blog.author}</p>
         <p>${blog.excerpt}</p>
-        <a href="${blog.url}">Read the full article</a>
+        <a href="${blog.slug}">Read the full article</a>
       </body>
     </html>`;
 }
