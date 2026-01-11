@@ -1,5 +1,5 @@
 import express from "express";
-import { createBlog, deleteBlog, editBlog, getAllBlogs, getBlog, getBlogs, likeBlog, publish, searchBlogs } from "../controllers/blogController.js";
+import { createBlog, deleteBlog, editBlog, getAllBlogs, getBlog, getBlogs, getBookmarkedStories, hasLikedBlog, likeBlog, publish, searchBlogs } from "../controllers/blogController.js";
 import { optionalAuth, protect } from "../middlewares/authMiddleware.js";
 import { addTopics, getCategories, getCategory } from "../controllers/topicsController.js";
 
@@ -27,6 +27,10 @@ router.get("/category/:slug", getCategory);
 
 router.post("/create-topics", protect, addTopics);
 
-router.patch("/:slug/like", likeBlog);
+router.patch("/:slug/like", protect, likeBlog);
+
+router.get("/:slug/has-liked", protect, hasLikedBlog);
+
+router.get("/get-user-bookmarks", protect, getBookmarkedStories);
 
 export default router;

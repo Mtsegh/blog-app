@@ -49,8 +49,6 @@ export const getBlog = async (req, res) => {
             ];
         }
         
-        console.log("Filter:", filter, update);
-        console.log(req.user);
         const blog = await Blog.findOneAndUpdate(
             filter,
             update,
@@ -110,7 +108,6 @@ export const getBlogs = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
-
 
 export const createBlog = async (req, res) => {
     try {
@@ -208,17 +205,17 @@ export const publish = async (req, res) => {
         return res.status(404).json({ message: "Blog not found" });
     }
     // Find subscribers (both author and category)
-    // const [authorSubs, categorySubs] = await Promise.all([
-    //     Subscription.find({ subscribeType: "User", subscribeTo: blog.authorId }).select("email -_id"),
-    //     Subscription.find({ subscribeType: "Topics", subscribeTo: blog.category }).select("email -_id"),
-    // ]);
+    const [authorSubs, categorySubs] = await Promise.all([
+        Subscription.find({ subscribeType: "User", subscribeTo: blog.author }).select("email -_id"),
+        Subscription.find({ subscribeType: "Topics", subscribeTo: blog.category }).select("email -_id"),
+    ]);
 
     // Combine and remove duplicates
-    // const allEmails = [...new Set([...authorSubs.map(s => s.email), ...categorySubs.map(s => s.email)])];
+    const allEmails = [...new Set([...authorSubs.map(s => s.email), ...categorySubs.map(s => s.email)])];
 
-    // if (allEmails.length > 0) {
-    //     await sendEmailsToSubscribers(allEmails, blog.excerpt);
-    // }
+    if (allEmails.length > 0) {
+        await sendEmailsToSubscribers(allEmails, blog.excerpt);
+    }
 
     res.status(200).json({ message: "Blog published and notifications sent", blog });
   } catch (err) {
@@ -229,22 +226,63 @@ export const publish = async (req, res) => {
 
 export const likeBlog = async (req, res) => {
     try {
+        const userId = req.user._id;
         const { slug } = req.params;
 
-        const blog = await Blog.findOne({ slug, published: true });
-        if (!blog) return res.status(404).json({ message: "Blog not found" });
+        const blog = await Blog.findOne({ slug, published: true }).select("_id");
+            if (!blog) {
+            return res.status(404).json({ message: "Blog not found" });
+        }
 
-        // Increment likes count
-        blog.likes = (blog.likes || 0) + 1;
-        await blog.save();
+        // check if user already liked
+        const alreadyLiked = await User.exists({
+            _id: userId,
+            likedBlogs: blog._id,
+        });
 
-        res.status(200).json({ likesCount: blog.likes });
+        if (alreadyLiked) {
+            return res.status(400).json({ message: "Blog already liked" });
+        }
+
+        // atomic update
+        await Promise.all([
+            User.findByIdAndUpdate(
+                userId,
+                { $addToSet: { likedBlogs: blog._id } }
+            ),
+            Blog.findByIdAndUpdate(
+                blog._id,
+                { $inc: { likesCount: 1 } }
+            ),
+        ]);
+
+        res.status(200).json({ liked: true });
+
     } catch (error) {
-        console.error("Error in visitor like:", error);
+        console.error("Error liking blog:", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
 
+export const hasLikedBlog = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { slug } = req.params;
+        const blog = await Blog.findOne({ slug, published: true }).select("_id");
+        if (!blog) {
+            return res.status(404).json({ message: "Blog not found" });
+        }
+        const alreadyLiked = await User.exists({
+            _id: userId,
+            likedBlogs: blog._id,
+        });
+        console.log("Has liked blog:", !!alreadyLiked);
+        res.status(200).json({ hasLiked: !!alreadyLiked });
+    } catch (error) {
+        console.error("Error checking liked blog:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
 
 export const deleteBlog = async (req, res) => {
   try {
@@ -324,4 +362,30 @@ export const searchBlogs = async (req, res) => {
     }
 };
 
+export const getBookmarkedStories = async (req, res) => {
+    try {
+        const userId = req.user._id;
+
+        const user = await User.findById(userId).select("savedStories");
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const blogs = await Blog.find({
+            _id: { $in: user.savedStories },
+            published: true,
+        })
+        .select("-htmlContent -tags -blogPics")
+        .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            count: blogs.length,
+            stories: blogs,
+        });
+
+    } catch (error) {
+        console.error("Error fetching bookmarked stories:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
 

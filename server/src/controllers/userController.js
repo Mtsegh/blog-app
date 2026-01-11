@@ -405,7 +405,7 @@ export const getUserProfile = async (req, res) => {
             isVerified: true, // 👈 ignore unverified users
         })
         .select(
-            "fullname userSlug bio profileImage coverImage createdAt"
+            "fullname email userSlug bio profileImage coverImage createdAt"
         )
         .lean();
 
@@ -425,4 +425,63 @@ export const getUserProfile = async (req, res) => {
         console.error("Error fetching profile:", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
+};
+
+export const toggleBookmarkStory = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { blogId } = req.body;
+
+    const user = await User.findOneAndUpdate(
+      { _id: userId, savedStories: blogId },
+      { $pull: { savedStories: blogId } },
+      { new: true }
+    );
+
+    if (user) {
+      return res.status(200).json({
+        bookmarked: false,
+        message: "Story removed from bookmarks",
+      });
+    }
+
+    await User.findByIdAndUpdate(
+      userId,
+      { $addToSet: { savedStories: blogId } }
+    );
+
+    res.status(200).json({
+      bookmarked: true,
+      message: "Story bookmarked successfully",
+    });
+
+  } catch (error) {
+    console.error("Error bookmarking story:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const isBookmarked = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { blogId } = req.params;
+
+    const user = await User.findOne(
+      { _id: userId, savedStories: blogId }
+    );
+
+    if (!user) {
+        return res.status(200).json({
+          bookmarked: false,
+        });
+    }
+    
+    return res.status(200).json({
+      bookmarked: true
+    });
+
+  } catch (error) {
+    console.error("Error checking story:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };

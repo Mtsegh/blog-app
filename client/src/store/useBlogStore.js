@@ -170,43 +170,41 @@ const useBlogStore = create((set, get) => ({
 
     },
 
-    likeBlog: async (slug) => {
-        const initialLikedPosts = JSON.parse(
-            localStorage.getItem("likedPosts") || "{}"
-        );
-
-        const likedPosts = (Array.isArray(initialLikedPosts) || typeof initialLikedPosts !== "object") ? {} : initialLikedPosts;
+    getUserBookmarks: async (useSkip) => {
         
-        const currentLikes = likedPosts[slug] ?? 0;
-
-        if (currentLikes >= 100) return; // 🚫 max reached
-
-        // optimistic update
-        likedPosts[slug] = currentLikes + 1;
-        localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
-        const posts = JSON.parse(
-            localStorage.getItem("likedPosts") || "{}"
-        );
-        
-
+        const { resetBlogStore } = get()
+        set({ isLoadingBlogs: true });
         try {
-            await axiosInstance.patch(`/blogs/${slug}/like`);
-        } catch (err) {
-            // rollback
-            likedPosts[slug] = currentLikes;
-            localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
-            throw err;
+            if (!useSkip) resetBlogStore();
+            const res = await axiosInstance.get(`/blogs/get-user-bookmarks`);
+            set({ blogs: res.data.stories });
+        } catch (error) {
+            // console.log(error.message);
+            toast.error(error.response.data.message);
+        } finally {
+            set({ isLoadingBlogs: false });
         }
     },
 
-    getUserLikes: (slug) => {
-        const likedPosts = JSON.parse(
-            localStorage.getItem("likedPosts") || "{}"
-        );
-        // console.log("Liked Posts from localStorage: ", likedPosts);
-        return likedPosts[slug] || 0;
+    likeBlog: async (slug) => {
+        try {
+            await axiosInstance.patch(`/blogs/${slug}/like`);
+            return 1;
+        } catch (error) {
+            // console.log(error.message);
+            toast.error(error.response.data.message);
+            return 0;
+        }
     },
 
+    hasLikedBlog: async (slug) => {
+        try {
+            const res = await axiosInstance.get(`/blogs/${slug}/has-liked`);
+            return res.data.hasLiked ? 1 : 0;
+        } catch (error) {
+            return 0;
+        }
+    },
 
     resetBlogStore: () => {
         set({

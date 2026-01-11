@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import blogRoutes from "./routes/blogRoutes.js"
 import authRoutes from "./routes/authRoutes.js"
+import commentRoutes from "./routes/commentRoutes.js"
 import subscribeRoutes from "./routes/subscribeRoute.js"
 import connectDB from "./lib/connectDB.js";
 
@@ -29,6 +30,8 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/subscribe", subscribeRoutes);
 app.use("/api/blogs", blogRoutes);
+app.use("/api/user", blogRoutes);
+app.use("/api/comments", commentRoutes);
 
 if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "../../client/dist")));

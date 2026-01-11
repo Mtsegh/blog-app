@@ -10,7 +10,7 @@ const useCategoryStore = create((set, get) => ({
     skip: 0,
 
     getCategories: async () => {
-        set({ loadingCat: false })
+        set({ loadingCat: true })
         try {
             const res = await axiosInstance.get("/blogs/all-categories");
             set({ categories: res.data });

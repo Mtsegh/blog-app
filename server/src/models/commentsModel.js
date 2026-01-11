@@ -11,15 +11,15 @@ const commentSchema = mongoose.Schema({
         required: true
     },
     author: {
-        type: String,        
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
         required: true
     },
     createdAt: {
         type: Date,
         default: Date.now
     }
-},
-{ _id: false });
+});
 
 const Comment = mongoose.model("Comment", commentSchema);
 

@@ -10,7 +10,7 @@ export default function HeartBurst({ burstKey }) {
 
         return (
           <motion.span
-            key={`${burstKey}-${i}`} // 🔥 re-mount per click
+            key={`${burstKey+10}-${i}`} // 🔥 re-mount per click
             initial={{ scale: 0, opacity: 1, x: 0, y: 0 }}
             animate={{
               scale: [1, 1.4, 1],

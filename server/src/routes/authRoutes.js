@@ -1,5 +1,5 @@
 import express from "express";
-import { checkAuth, forgotPassword, getUserProfile, getUsersWithPublishedBlogs, login, logout, resendVerificationEmail, resetPassword, signup, updateProfile, verifyEmail } from "../controllers/userController.js";
+import { checkAuth, forgotPassword, getUserProfile, getUsersWithPublishedBlogs, isBookmarked, login, logout, resendVerificationEmail, resetPassword, signup, toggleBookmarkStory, updateProfile, verifyEmail } from "../controllers/userController.js";
 import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router()
@@ -27,5 +27,9 @@ router.patch("/reset-password/:token", resetPassword);
 router.get("/get-authors", getUsersWithPublishedBlogs);
 
 router.get("/authors/:userSlug", getUserProfile);
+
+router.post("/bookmarks-stories", protect, toggleBookmarkStory);
+
+router.get("/check-bookmark/:blogId", protect, isBookmarked);
 
 export default router;

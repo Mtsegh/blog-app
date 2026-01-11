@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { formatPrettyDate } from '../../lib/formatDate';
 
 function DashboardPage() {
-  const { blogs, getBlogs, isLoadingBlogs, resetBlogStore } = useBlogStore();
+  const { blogs, getBlogs, isLoadingBlogs, resetBlogStore, getUserBookmarks } = useBlogStore();
   const { authUser } = useAuthStore();
   const [activeBtn, setActiveBtn] = useState({
     drafts: true,
@@ -39,16 +39,16 @@ function DashboardPage() {
             }>Published</button>
           <button className={`nj ${activeBtn.pending  && 'border-b text-gray-900 dark:text-gray-100'} py-4`}
             onClick={() => {
-              getBlogs(`author=${authUser?._id}&drafts=true`, false)
+              getUserBookmarks(false)
               setActiveBtn({drafts: false, pending: true, published: false})
             }
-            }>Pending</button>
+            }>Bookmarks</button>
         </div>
         <div className='flex flex-col'>
           {isLoadingBlogs ? <Loader2 /> :
             ( (!blogs || blogs.length === 0) ?
               <div className="text-center p-6">
-                You have no {activeBtn.drafts ? 'drafts' : activeBtn.published ? 'published blogs' : 'pending blogs'} yet.
+                You have no {activeBtn.drafts ? 'drafts' : activeBtn.published ? 'published blogs' : 'bookmarks'} yet.
               </div> :
               blogs.map((blog) => (
               <div className="flex border-b last:border-none border-gray-300 py-6" key={blog._id}>

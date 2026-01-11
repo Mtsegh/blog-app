@@ -109,7 +109,7 @@ function BlogPreview({ blog, className = "" }) {
               text-muted-foreground
             "
           >
-            Puublished in {category?.name} Stories
+            Published in {category?.name} Stories
           </span>
         </div>
       </div>

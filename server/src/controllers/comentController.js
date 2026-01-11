@@ -13,7 +13,7 @@ export const addComment = async (req, res) => {
     if (!blog) return res.status(404).json({ message: "Blog not found" });
 
     const comment = new Comment({ blogId, comment: text, author });
-    await comment.save();
+    if (comment) await comment.save();
     
     res.status(201).json({ message: "Comment added successfully", comment });
   } catch (err) {
@@ -27,8 +27,13 @@ export const getComments = async (req, res) => {
   try {
     const { blogId } = req.params;
 
-    const comments = await Comment.find({ blogId }).sort({ createdAt: -1 }); // latest first
-    res.status(200).json(comments);
+    const comments = await Comment.find({ blogId })
+    .sort({ createdAt: -1 })
+    .populate("author", "_id userSlug fullname profileImage")
+    .lean(); // latest first
+
+    const no_of_comments = await Comment.countDocuments({ blogId });
+    res.status(200).json({ comments, no_of_comments });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error fetching comments" });
@@ -39,10 +44,10 @@ export const deleteComments = async (req, res) => {
   try {
     const { commentId } = req.params;
 
-    const comments = await Comment.findOneAndDelete({ commentId }, { new: true }).sort({ createdAt: -1 }); // latest first
-    res.status(200).json(comments);
+    await Comment.findOneAndDelete({ _id: commentId });
+    res.status(200).json({ message: "Comment deleted successfully" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error fetching comments" });
+    res.status(500).json({ message: "Error deleting comment" });
   }
 };

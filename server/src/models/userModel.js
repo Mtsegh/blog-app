@@ -25,7 +25,14 @@ const userSchema = mongoose.Schema({
         unique: true,
         index: true
     },
-    subscribers: [String],
+    savedStories: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Blog",
+    }],
+    likedBlogs: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Blog",
+    }],
     profileImage: {
         type: String,
         default: "https://res.cloudinary.com/dz0sija7a/image/upload/v1766826956/user/content/ixfquskbh7cbu6z7emte.jpg"
@@ -43,6 +50,8 @@ const userSchema = mongoose.Schema({
 	verificationToken: String,
 	verificationTokenExpiresAt: Date,
 }, { timestamps: true });
+
+userSchema.index({ likedBlogs: 1 });
 
 const User = mongoose.model("User", userSchema);
 

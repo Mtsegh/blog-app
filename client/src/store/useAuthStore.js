@@ -51,10 +51,11 @@ const useAuthStore = create((set, get) =>({
             const res = await axiosInstance.post("/auth/login", data);
             set({ authUser: res.data })
             toast.success(res.data.message);
+            return true;
         } catch (error) {
             // console.log(error.response.data);
-            
             toast.error(error.response.data.message)
+            return false;
         } finally {
             set({ isLoggingIn: false })
         }
@@ -95,6 +96,16 @@ const useAuthStore = create((set, get) =>({
             toast.error(error.response.data.message);
         } finally {
             set({ isLoading: false });
+        }
+    },
+
+    checkBookmarked: async (blogId) => {
+        try {
+            const res = await axiosInstance.get(`/auth/check-bookmark/${blogId}`);
+            return res.data.bookmarked;
+        } catch (error) {
+            toast.error(error.response.data.message);
+            return false;
         }
     },
 
@@ -140,6 +151,17 @@ const useAuthStore = create((set, get) =>({
         }
     },
 
+    toggleBookmarkStory: async (blogId) => {
+        try {
+            const res = await axiosInstance.post(`/auth/bookmarks-stories`, { blogId });
+            toast.success(res.data.message);
+            console.log("Bookmark status:", res.data.bookmarked);
+            return res.data.bookmarked;
+        } catch (error) {
+            toast.error(error.response.data.message);
+            return null;
+        }
+    },
 
 }))
 

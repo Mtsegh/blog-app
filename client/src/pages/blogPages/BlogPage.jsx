@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { useParams, Link, Navigate } from "react-router-dom";
+import { use, useEffect, useState } from "react";
+import { useParams, Link, Navigate, useLocation } from "react-router-dom";
 import useBlogStore from "../../store/useBlogStore";
 import useAuthStore from "../../store/useAuthStore";
-import { HeartBurst, LoadingSpinner } from "../../components";
+import { CommentSection, HeartBurst, LoadingSpinner, PopupLogin } from "../../components";
 import parse from "html-react-parser";
 import {
   Heart,
@@ -10,12 +10,13 @@ import {
   Pencil,
   Trash2,
   CheckCircle,
-  Loader2
+  Bookmark
 } from "lucide-react";
 
 export default function BlogPage() {
   const { slug } = useParams();
-  const { authUser } = useAuthStore();
+  const location = useLocation();
+  const { authUser, toggleBookmarkStory, checkBookmarked } = useAuthStore();
 
   const {
     getBlog,
@@ -24,12 +25,14 @@ export default function BlogPage() {
     publishBlog,
     deleteBlog,
     likeBlog,
-    hasLikedPost,
+    hasLikedBlog,
   } = useBlogStore();
 
   const [userLikes, setUserLikes] = useState(0);
   const [likesCount, setLikesCount] = useState(0);
-  const [burstKey, setBurstKey] = useState(0);
+  const [burstKey, setBurstKey] = useState(true);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
 
 
   // Fetch Blog
@@ -39,9 +42,29 @@ export default function BlogPage() {
 
   useEffect(() => {
     if (!blogData) return;
-
+    
     setLikesCount(blogData.likes || 0);
-    setUserLikes(useBlogStore.getState().getUserLikes(blogData.slug));
+    const fetchUserLikes = async () => {
+      if (!authUser) {
+        setUserLikes(0);
+        return;
+      }
+      const likes = await hasLikedBlog(blogData.slug);
+      if (likes === 1) setBurstKey((prev) => !prev);
+      setUserLikes(likes);
+    };
+    fetchUserLikes();
+  }, [blogData]);
+
+  useEffect(() => {
+    if (!blogData) return;
+    const checkBookmarkStatus = async () => {
+      if (!authUser) return;
+      const isBlogBookmarked = await checkBookmarked(blogData._id);
+      setIsBookmarked(isBlogBookmarked);
+      console.log("Bookmark status on load:", isBlogBookmarked);
+    };
+    checkBookmarkStatus();
   }, [blogData]);
 
 
@@ -58,18 +81,14 @@ export default function BlogPage() {
   const isAuthor = authUser && authUser._id === blogData?.author?._id;
 
   const handleLike = async () => {
-    if (userLikes >= 100) return;
-
-    setBurstKey((k) => k + 1); // 🔥 retrigger animation
-    setUserLikes((prev) => prev + 1);
-    setLikesCount((prev) => prev + 1);
-
-    try {
-      await likeBlog(slug);
-    } catch (err) {
-      setUserLikes((prev) => prev - 1);
-      setLikesCount((prev) => prev - 1);
+    if (!authUser) {
+      setShowLogin(true);
+      return;
     }
+    if (userLikes > 0) return; // already liked
+    const likes = await likeBlog(slug);
+    if (likes === 1) setBurstKey((prev) => !prev); // trigger burst animation
+    setUserLikes((prev) => prev + likes);
   };
 
 
@@ -101,11 +120,33 @@ export default function BlogPage() {
     }
   };
 
+  const toggleBookmark = async () => {
+    if (!authUser) {
+      setShowLogin(true);
+      return;
+    }
+    setIsBookmarked((prev) => !prev);
+    const isBookmarked = await toggleBookmarkStory(blogData._id);
+    if (isBookmarked === null) {
+      setIsBookmarked((prev) => !prev);
+      return; // error occurred
+    }
+    console.log("Bookmark status:", isBookmarked);
+    setIsBookmarked(isBookmarked);
+  };
+
 
   return (
-    <div className="max-w-6xl mx-auto flex gap-8 py-10">
+    <div className="relative flex gap-8 py-10">
+      <PopupLogin
+        open={showLogin}
+        redirectTo={location.pathname}
+        onClose={() => setShowLogin(false)}
+      />
+      {console.log("Blog Data:", authUser, showLogin)}
+
       {/* LEFT — Sticky Author Tools / Actions */}
-      <div className="hidden md:flex flex-col gap-4 sticky top-28 h-fit">
+      <div className="hidden md:flex items-center flex-col pl-4 gap-4 sticky top-28 h-fit">
         {/* Like Button */}
         <button
           onClick={handleLike}
@@ -123,6 +164,22 @@ export default function BlogPage() {
           </div>
           <span className="text-sm text-gray-600">{likesCount}</span>
         </button>
+        
+        <button
+          onClick={toggleBookmark}
+          className="flex flex-col items-center group"
+        >
+          <div className="relative">
+            <Bookmark
+              className={`size-7 transition-transform duration-150 ${
+                isBookmarked
+                  ? "text-gray-700 fill-gray-600 scale-110"
+                  : "text-gray-400"
+              }`}
+            />
+          </div>
+        </button>
+        
 
         {/* Share Button */}
         <button onClick={share} className="flex flex-col items-center group">
@@ -198,7 +255,9 @@ export default function BlogPage() {
         <div className="prose prose-lg max-w-none">
           <div className="ql-editor">{parse(blogData?.htmlContent)}</div>
         </div>
-
+        <div className="">
+            <CommentSection blogId={blogData?._id} authUser={authUser} setShowLogin={setShowLogin} />
+        </div>
         {/* Bottom Like for mobile */}
       </div>
       <div className="md:hidden bottom-0 fixed bg-white dark:bg-gray-800 flex gap-6 justify-around mt-10 w-full h-16 items-center p-2 border-t border-gray-300">
@@ -215,6 +274,21 @@ export default function BlogPage() {
           </div>
           <span className="text-md text-gray-600 dark:text-gray-200">{likesCount}</span>
         </button>
+        <button
+          onClick={toggleBookmark}
+          className="flex items-center"
+        >
+          <div className="relative">
+            <Bookmark
+              className={`size-7 transition-transform duration-150 ${
+                isBookmarked
+                  ? "text-gray-700 fill-gray-600 scale-110"
+                  : "text-gray-400"
+              }`}
+            />
+          </div>
+        </button>
+        
         {isAuthor && (
           <>
             <Link
@@ -230,7 +304,7 @@ export default function BlogPage() {
               <button
                 onClick={() => publishBlog(slug)}
                 className="flex flex-col items-center group"
-              >
+                >
                 <CheckCircle className="size-6 text-green-600 group-hover:text-green-700" />
                 <span className="text-xs text-green-600">Publish</span>
               </button>
