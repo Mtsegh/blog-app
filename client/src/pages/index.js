@@ -19,3 +19,10 @@ export { default as EmailVerificationPage } from "./authPages/EmailVerificationP
 export { default as AddTopic } from "./authorPages/AddTopicPage";
 
 export { default as TopicInfoPage } from "./blogPages/TopicsInfoPage";
+
+// Legal Pages
+export { default as Explore } from "./LegalPages/Explore";
+export { default as PrivacyPolicy } from "./LegalPages/PrivacyPolicy";
+export { default as Contact } from "./LegalPages/Contact";
+export { default as Support } from "./LegalPages/Support";
+export { default as TermsOfUse } from "./LegalPages/TermsOfUse";

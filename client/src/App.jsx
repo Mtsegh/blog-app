@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from "react-hot-toast"
 import { Loader } from "lucide-react"
-import { BlogPage, CreateBlogPage, DashboardPage, EditBlogPage, EditProfilePage, EmailVerificationPage, ForgotPasswordPage, HomePage, LoginPage, ProfilePage, ResetPasswordPage, SearchPage, SettingsPage, SignUpPage, AuthorsPage, AddTopic, AllTopicsPage } from './pages';
+import { BlogPage, CreateBlogPage, DashboardPage, EditBlogPage, EditProfilePage, EmailVerificationPage, ForgotPasswordPage, HomePage, LoginPage, ProfilePage, ResetPasswordPage, SearchPage, SettingsPage, SignUpPage, AuthorsPage, AddTopic, AllTopicsPage, PrivacyPolicy, Contact, Support, Explore, TermsOfUse } from './pages';
 import useAuthStore from './store/useAuthStore';
 import { Footer, LoadingSpinner } from './components';
 import { MainLayout } from './Layout';
@@ -93,7 +93,27 @@ export default function App() {
 					<Route
 						path='/profile/:userSlug'
 						element={ <ProfilePage /> }
-					/>					
+					/>
+					<Route
+						path='/privacy-policy'
+						element={ <PrivacyPolicy /> }
+					/>
+					<Route
+						path='/terms-of-use'
+						element={ <TermsOfUse /> }
+					/>
+					<Route
+						path='/contact'
+						element={ <Contact /> }
+					/>
+					<Route
+						path='/support'
+						element={ <Support /> }
+					/>
+					<Route
+						path='/explore'
+						element={ <Explore /> }
+					/>
 				</Route>
 
 				<Route
